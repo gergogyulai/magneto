@@ -10,6 +10,11 @@ A privacy-focused Chrome extension for collecting magnet links. Built with Vite 
 *   **Simple UI:** View, copy, and manage links easily. 🖱️
 *   **Safe Collection:** Whitelist sites for trusted links. ✅
 
+
+## Why Magneto?
+
+Torrent sites go down all the time. One day, a link is there, and the next, it’s gone until the site comes back. I got tired of losing access to torrents I meant to download but didn’t get around to. So I built Magneto—a simple, lightweight extension to collect and store magnet links, creating a personal cache in case sites go down.
+
 ## ⬇️ Installing
 
 You need chrome 114 or later to install the extension.
