@@ -1,19 +1,13 @@
 {
   "name": "magneto",
   "displayName": "magneto",
-  "version": "0.0.0",
-  "author": "crackhead.engineering",
+  "version": "1.0.0",
+  "author": "gergogyulai",
   "description": "",
   "type": "module",
   "license": "MIT",
-  "keywords": [
-    "chrome-extension",
-    "svelte",
-    "vite",
-    "create-chrome-ext"
-  ],
   "engines": {
-    "node": ">=14.18.0"
+    "node": ">=14.18.0"    
   },
   "scripts": {
     "dev": "vite",
@@ -53,10 +47,5 @@
     "vaul-svelte": "^0.3.2",
     "vite": "^4.4.11",
     "zod": "^3.24.2"
-  },
-  "dependencies": {
-    "@tailwindcss/vite": "^4.0.8",
-    "fuse.js": "^7.1.0",
-    "svelte-headless-table": "^0.18.3"
   }
 }
