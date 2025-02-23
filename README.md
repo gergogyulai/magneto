@@ -12,11 +12,16 @@ A privacy-focused Chrome extension for collecting magnet links. Built with Vite 
 
 ## ⬇️ Installing
 
-1.  Node.js >= 14 required.
-2.  Customize `src/manifest.json`.
-3.  Run `npm install` to install dependencies.
+You need chrome 114 or later to install the extension.
+1.  Download the latest release from [Releases](https://github.com/gergogyulai/magneto/releases).
+2.  Unzip the file.
+3.  Open Chrome and go to `chrome://extensions/`.
+4.  Enable 'Developer mode' in the top right.
+5.  'Load unpacked' and select the unzipped folder.
+
 
 ## 👨‍💻 Developing
+  Node.js >= 14 or equivalent required
 
 1.  Clone:
 
@@ -24,7 +29,6 @@ A privacy-focused Chrome extension for collecting magnet links. Built with Vite 
     git clone github.com/gergogyulai/magneto.git
     cd magneto
     ```
-
 2.  Install dependencies (choose one):
 
     ```shell
@@ -49,7 +53,15 @@ A privacy-focused Chrome extension for collecting magnet links. Built with Vite 
 ## 📦 Building
 
 ```shell
+bun run build # creates a build in the build folder
 npm run build
+pnpm run build
+```
+or
+```shell
+bun run zip # creates a zip file in the package folder
+npm run zip
+pnpm run zip
 ```
 
 ## 🛡️ Privacy
