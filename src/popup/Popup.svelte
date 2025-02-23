@@ -21,7 +21,7 @@
   let currentHost = ''
   let collectedMagnetLinks: number = 0
   let collectedMagnetLinksThisSite: number = 0
-  let isBuiltInChrome = false // flag for built-in chrome pages
+  let isBuiltInChrome = false
   let tabId: number
 
   onMount(async () => {
@@ -38,7 +38,6 @@
       }
     }
 
-    // If it's a built-in Chrome page, exit early.
     if (isBuiltInChrome) {
       return
     }
@@ -52,14 +51,13 @@
     isCollecting = result.isCollecting ?? false
     whitelistedHosts = result.whitelistedHosts ?? []
 
-    // Add listener for magnet link updates
     chrome.runtime.onMessage.addListener((message) => {
       if (message.type === 'MAGNET_LINKS_UPDATED') {
         chrome.storage.local.get(['magnetLinks'], (result) => {
           const links = result.magnetLinks || []
           collectedMagnetLinks = links.length
-          collectedMagnetLinksThisSite = links.filter(
-            (link: MagnetRecord) => link.source.includes(currentHost)
+          collectedMagnetLinksThisSite = links.filter((link: MagnetRecord) =>
+            link.source.includes(currentHost),
           ).length
         })
       }
@@ -69,15 +67,14 @@
   function toggleCollection() {
     isCollecting = !isCollecting
     chrome.storage.sync.set({ isCollecting })
-    
+
     if (isCollecting) {
-      // Execute content script when enabling collection
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const activeTab = tabs[0];
+        const activeTab = tabs[0]
         if (activeTab?.id) {
-          chrome.tabs.sendMessage(activeTab.id, { type: 'COLLECT_MAGNETS' });
+          chrome.tabs.sendMessage(activeTab.id, { type: 'COLLECT_MAGNETS' })
         }
-      });
+      })
     }
   }
 
@@ -86,13 +83,13 @@
       whitelistedHosts = [...whitelistedHosts, currentHost]
       chrome.storage.sync.set({ whitelistedHosts })
       if (isCollecting) {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const activeTab = tabs[0];
-        if (activeTab?.id) {
-          chrome.tabs.sendMessage(activeTab.id, { type: 'COLLECT_MAGNETS' });
-        }
-      });
-    }
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          const activeTab = tabs[0]
+          if (activeTab?.id) {
+            chrome.tabs.sendMessage(activeTab.id, { type: 'COLLECT_MAGNETS' })
+          }
+        })
+      }
     }
   }
 
@@ -102,21 +99,19 @@
   }
 
   function openSidePanel() {
-    // Check if the sidePanel API is available
     if (!chrome.sidePanel) {
-      console.error("SidePanel API is not available.");
-      return;
+      console.error('SidePanel API is not available.')
+      return
     }
-    // Validate tabId
     if (typeof tabId !== 'number') {
-      console.error("Tab ID is not available.");
-      return;
+      console.error('Tab ID is not available.')
+      return
     }
     try {
-      chrome.sidePanel.open({ tabId });
-      window.close();
+      chrome.sidePanel.open({ tabId })
+      window.close()
     } catch (error) {
-      console.error("Error opening side panel:", error);
+      console.error('Error opening side panel:', error)
     }
   }
 </script>
@@ -125,7 +120,7 @@
   {#if isBuiltInChrome}
     <Card class="min-w-80 rounded-none pb-5">
       <CardHeader>
-        <CardTitle class="flex items-center gap-2"><Magnet/>Magneto</CardTitle>
+        <CardTitle class="flex items-center gap-2"><Magnet />Magneto</CardTitle>
         <CardDescription>
           <AlertCircle class="inline-block w-4 h-4 mr-1" />
           Not available on Chrome internal pages
@@ -136,7 +131,7 @@
     <Card class="min-w-80 rounded-none">
       <CardHeader>
         <div class="flex items-center justify-between">
-          <CardTitle class="flex items-center gap-2"><Magnet/>Magneto</CardTitle>
+          <CardTitle class="flex items-center gap-2"><Magnet />Magneto</CardTitle>
           <div class="flex items-center gap-2 text-muted-foreground">
             <span class="text-sm">{isCollecting ? '' : 'Paused'}</span>
             <Switch checked={isCollecting} on:click={toggleCollection} />
@@ -159,13 +154,9 @@
               </span>
             {/if}
             <!-- <div class="flex gap-2"> -->
-              <Button
-                variant="outline"
-                size="sm"
-                on:click={openSidePanel}
-              >
-                Open Magnet Explorer
-              </Button>
+            <Button variant="outline" size="sm" on:click={openSidePanel}>
+              Open Magnet Explorer
+            </Button>
             <!-- </div> -->
           </div>
         </div>
@@ -186,7 +177,7 @@
               disabled={!currentHost || whitelistedHosts.includes(currentHost)}
             >
               <Plus class="w-4 h-4 mr-1" />
-              {whitelistedHosts.includes(currentHost)? 'Whitelisted' : 'Whitelist'}
+              {whitelistedHosts.includes(currentHost) ? 'Whitelisted' : 'Whitelist'}
             </Button>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { MagnetRecord } from "../lib/types"
+import { MagnetRecord } from '../lib/types'
 
 console.log('background is running')
 
@@ -10,55 +10,60 @@ chrome.runtime.onMessage.addListener((request) => {
 
 chrome.runtime.onMessage.addListener((request) => {
   if (request.type === 'MAGNET_LINKS') {
-    console.log('background has received a message from contentScript, and magnet links are ', request?.magnetLinks);
+    console.log(
+      'background has received a message from contentScript, and magnet links are ',
+      request?.magnetLinks,
+    )
 
     chrome.storage.local.get(['magnetLinks'], (result) => {
-      const existingLinks: MagnetRecord[] = result.magnetLinks || [];
+      const existingLinks: MagnetRecord[] = result.magnetLinks || []
       const newLinks: MagnetRecord[] = request?.magnetLinks.filter(
         (newLink: MagnetRecord) =>
-          !existingLinks.some(existingLink => existingLink.magnetLink === newLink.magnetLink)
-      );
+          !existingLinks.some((existingLink) => existingLink.magnetLink === newLink.magnetLink),
+      )
 
       if (newLinks.length > 0) {
-        const updatedLinks = [...existingLinks, ...newLinks];
+        const updatedLinks = [...existingLinks, ...newLinks]
         chrome.storage.local.set({ magnetLinks: updatedLinks }, () => {
-          console.log('new magnet links have been appended to storage');
+          console.log('new magnet links have been appended to storage')
           // Notify all UI components about the update
-          chrome.runtime.sendMessage({ 
+          chrome.runtime.sendMessage({
             type: 'MAGNET_LINKS_UPDATED',
-            totalCount: updatedLinks.length
-          });
-        });
+            totalCount: updatedLinks.length,
+          })
+        })
       }
-    });
+    })
   }
-});
+})
 
-
-function formatMagnetLinks(links: MagnetRecord[], format: string): { content: string; mimeType: string; extension: string } {
+function formatMagnetLinks(
+  links: MagnetRecord[],
+  format: string,
+): { content: string; mimeType: string; extension: string } {
   switch (format) {
     case 'JSON':
       return {
         content: JSON.stringify(links, null, 2),
         mimeType: 'application/json',
-        extension: 'json'
-      };
+        extension: 'json',
+      }
     case 'CSV':
       const csvContent = [
         'magnetLink,title,timestamp',
-        ...links.map(link => `${link.magnetLink},"${link.name || ''}",${link.date}`)
-      ].join('\n');
+        ...links.map((link) => `${link.magnetLink},"${link.name || ''}",${link.date}`),
+      ].join('\n')
       return {
         content: csvContent,
         mimeType: 'text/csv',
-        extension: 'csv'
-      };
+        extension: 'csv',
+      }
     default: // TXT
       return {
-        content: links.map(link => link.magnetLink).join('\n'),
+        content: links.map((link) => link.magnetLink).join('\n'),
         mimeType: 'text/plain',
-        extension: 'txt'
-      };
+        extension: 'txt',
+      }
   }
 }
 
@@ -66,35 +71,38 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.type === 'EXPORT_MAGNETS') {
     chrome.storage.local.get(['magnetLinks'], (result) => {
       if (chrome.runtime.lastError) {
-        sendResponse({ success: false, error: chrome.runtime.lastError.message });
-        return;
+        sendResponse({ success: false, error: chrome.runtime.lastError.message })
+        return
       }
 
-      const magnetLinks = result.magnetLinks || [];
-      const { content, mimeType, extension } = formatMagnetLinks(magnetLinks, request.format);
+      const magnetLinks = result.magnetLinks || []
+      const { content, mimeType, extension } = formatMagnetLinks(magnetLinks, request.format)
 
-      const blob = new Blob([content], { type: mimeType });
-      const reader = new FileReader();
+      const blob = new Blob([content], { type: mimeType })
+      const reader = new FileReader()
 
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
-          chrome.downloads.download({
-            url: reader.result,
-            filename: `magnet-links.${extension}`,
-            saveAs: true
-          }, (downloadId) => {
-            if (chrome.runtime.lastError) {
-              sendResponse({ success: false, error: chrome.runtime.lastError.message });
-            } else {
-              sendResponse({ success: true, downloadId });
-            }
-          });
+          chrome.downloads.download(
+            {
+              url: reader.result,
+              filename: `magnet-links.${extension}`,
+              saveAs: true,
+            },
+            (downloadId) => {
+              if (chrome.runtime.lastError) {
+                sendResponse({ success: false, error: chrome.runtime.lastError.message })
+              } else {
+                sendResponse({ success: true, downloadId })
+              }
+            },
+          )
         } else {
-          sendResponse({ success: false, error: 'Unexpected file reader result type' });
+          sendResponse({ success: false, error: 'Unexpected file reader result type' })
         }
-      };
-      reader.readAsDataURL(blob);
-    });
-    return true;
+      }
+      reader.readAsDataURL(blob)
+    })
+    return true
   }
-});
+})

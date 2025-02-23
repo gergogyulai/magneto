@@ -4,12 +4,11 @@ A privacy-focused Chrome extension for collecting magnet links. Built with Vite 
 
 ## ✨ Features
 
-*   **Auto-Detect:** Scans webpages for magnet links. 🔍
-*   **Lightweight:** Minimal impact on browsing. 🚀
-*   **Privacy-First:** Operates locally, no data tracking. 🔒
-*   **Simple UI:** View, copy, and manage links easily. 🖱️
-*   **Safe Collection:** Whitelist sites for trusted links. ✅
-
+- **Auto-Detect:** Scans webpages for magnet links. 🔍
+- **Lightweight:** Minimal impact on browsing. 🚀
+- **Privacy-First:** Operates locally, no data tracking. 🔒
+- **Simple UI:** View, copy, and manage links easily. 🖱️
+- **Safe Collection:** Whitelist sites for trusted links. ✅
 
 ## Why Magneto?
 
@@ -18,15 +17,16 @@ Torrent sites go down all the time. One day, a link is there, and the next, it�
 ## ⬇️ Installing
 
 You need chrome 114 or later to install the extension.
+
 1.  Download the latest release from [Releases](https://github.com/gergogyulai/magneto/releases).
 2.  Unzip the file.
 3.  Open Chrome and go to `chrome://extensions/`.
 4.  Enable 'Developer mode' in the top right.
 5.  'Load unpacked' and select the unzipped folder.
 
-
 ## 👨‍💻 Developing
-  Node.js >= 14 or equivalent required
+
+Node.js >= 14 or equivalent required
 
 1.  Clone:
 
@@ -34,6 +34,7 @@ You need chrome 114 or later to install the extension.
     git clone github.com/gergogyulai/magneto.git
     cd magneto
     ```
+
 2.  Install dependencies (choose one):
 
     ```shell
@@ -62,7 +63,9 @@ bun run build # creates a build in the build folder
 npm run build
 pnpm run build
 ```
+
 or
+
 ```shell
 bun run zip # creates a zip file in the package folder
 npm run zip
@@ -71,9 +74,9 @@ pnpm run zip
 
 ## 🛡️ Privacy
 
-*   **No Data Collection:** We collect nothing.
-*   **Local Only:** All processing is local.
-*   **No External Servers:** No communication outside your browser.
+- **No Data Collection:** We collect nothing.
+- **Local Only:** All processing is local.
+- **No External Servers:** No communication outside your browser.
 
 ## 🤝 Contributing
 

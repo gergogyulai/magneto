@@ -14,15 +14,15 @@
     CardTitle,
     CardDescription,
   } from '$lib/components/ui/card'
-  import { EllipsisVertical, Link, Magnet, Check, ChevronsUpDown } from 'lucide-svelte';
+  import { EllipsisVertical, Link, Magnet, Check, ChevronsUpDown } from 'lucide-svelte'
   import { parseTorrentName } from '$lib/utils'
   import Input from '$lib/components/ui/input/input.svelte'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
-  import { tick } from "svelte";
-  import * as Command from "$lib/components/ui/command/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
-  import { cn } from "$lib/utils.js";
-  import ExportDropdown from "$lib/components/export-dropdown.svelte";
+  import { tick } from 'svelte'
+  import * as Command from '$lib/components/ui/command/index.js'
+  import * as Popover from '$lib/components/ui/popover/index.js'
+  import { cn } from '$lib/utils.js'
+  import ExportDropdown from '$lib/components/export-dropdown.svelte'
 
   let isCollecting = false
   let whitelistedHosts: string[] = []
@@ -38,13 +38,16 @@
   let selectedOrder = ''
 
   // Compute available sources for filter.
-  $: availableSources = [...new Set(magnetLinksArray.map(item => item.source))]
+  $: availableSources = [...new Set(magnetLinksArray.map((item) => item.source))]
 
   // Filter and order magnet links.
   $: filteredMagnetLinks = (() => {
-    let filtered = magnetLinksArray.filter(link => {
+    let filtered = magnetLinksArray.filter((link) => {
       const torrentName = (parseTorrentName(link.magnetLink) || '').toLowerCase()
-      return torrentName.includes(searchTerm.toLowerCase()) && (selectedSourceFilter ? link.source === selectedSourceFilter : true)
+      return (
+        torrentName.includes(searchTerm.toLowerCase()) &&
+        (selectedSourceFilter ? link.source === selectedSourceFilter : true)
+      )
     })
     if (selectedOrder === 'asc') {
       filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -55,14 +58,17 @@
   })()
 
   // New state for popovers and ordering options
-  let openSource = false;
-  let openOrder = false;
+  let openSource = false
+  let openOrder = false
   const orderOptions = [
     { value: '', label: 'No ordering' },
     { value: 'asc', label: 'Date Ascending' },
-    { value: 'desc', label: 'Date Descending' }
-  ];
-  $: sourceOptions = [{ value: '', label: 'All sources' }, ...availableSources.map(src => ({ value: src, label: src }))];
+    { value: 'desc', label: 'Date Descending' },
+  ]
+  $: sourceOptions = [
+    { value: '', label: 'All sources' },
+    ...availableSources.map((src) => ({ value: src, label: src })),
+  ]
 
   onMount(async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
@@ -94,14 +100,14 @@
     chrome.runtime.onMessage.addListener((message) => {
       if (message.type === 'MAGNET_LINKS_UPDATED') {
         chrome.storage.local.get(['magnetLinks'], (result) => {
-          magnetLinksArray = result.magnetLinks || [];
-          collectedMagnetLinks = magnetLinksArray.length;
-          collectedMagnetLinksThisSite = magnetLinksArray.filter(
-            (link) => link.source.includes(currentHost)
-          ).length;
-        });
+          magnetLinksArray = result.magnetLinks || []
+          collectedMagnetLinks = magnetLinksArray.length
+          collectedMagnetLinksThisSite = magnetLinksArray.filter((link) =>
+            link.source.includes(currentHost),
+          ).length
+        })
       }
-    });
+    })
   })
 
   // New function to delete a magnet link.
@@ -165,24 +171,28 @@
           />
           <ul class="space-y-2">
             {#each filteredMagnetLinks as link, idx}
-            <li class="flex items-center justify-between">
-              <span class="truncate">{parseTorrentName(link.magnetLink)}</span>
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger>
-                  <Button variant="ghost" size="icon">
-                    <EllipsisVertical/>
-                  </Button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content>
-                  <DropdownMenu.Group>
-                    <DropdownMenu.Item disabled>source: {link.source}</DropdownMenu.Item>
-                    <DropdownMenu.Item on:click={() => copyMagnetLink(link)}>Copy magnet link</DropdownMenu.Item>
-                    <!-- <DropdownMenu.Item href={link.magnetLink}>Open in client</DropdownMenu.Item> -->
-                    <DropdownMenu.Item on:click={() => deleteMagnet(link)}>Remove</DropdownMenu.Item>
-                  </DropdownMenu.Group>
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
-            </li>
+              <li class="flex items-center justify-between">
+                <span class="truncate">{parseTorrentName(link.magnetLink)}</span>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="ghost" size="icon">
+                      <EllipsisVertical />
+                    </Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    <DropdownMenu.Group>
+                      <DropdownMenu.Item disabled>source: {link.source}</DropdownMenu.Item>
+                      <DropdownMenu.Item on:click={() => copyMagnetLink(link)}
+                        >Copy magnet link</DropdownMenu.Item
+                      >
+                      <!-- <DropdownMenu.Item href={link.magnetLink}>Open in client</DropdownMenu.Item> -->
+                      <DropdownMenu.Item on:click={() => deleteMagnet(link)}
+                        >Remove</DropdownMenu.Item
+                      >
+                    </DropdownMenu.Group>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </li>
             {/each}
           </ul>
         </div>

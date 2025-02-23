@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src'),
-        '$lib': path.resolve("./src/lib"),
+        $lib: path.resolve('./src/lib'),
       },
     },
   }
