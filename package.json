@@ -1,0 +1,62 @@
+{
+  "name": "magneto",
+  "displayName": "magneto",
+  "version": "0.0.0",
+  "author": "crackhead.engineering",
+  "description": "",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "chrome-extension",
+    "svelte",
+    "vite",
+    "create-chrome-ext"
+  ],
+  "engines": {
+    "node": ">=14.18.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "fmt": "prettier --write '**/*.{svelte,ts,json,css,scss,md}'",
+    "zip": "npm run build && node src/zip.js"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.31",
+    "@internationalized/date": "^3.7.0",
+    "@sveltejs/vite-plugin-svelte": "2.4.6",
+    "@types/chrome": "0.0.306",
+    "autoprefixer": "^10.4.20",
+    "bits-ui": "0.22.0",
+    "clsx": "^2.1.1",
+    "cmdk-sv": "^0.0.18",
+    "embla-carousel-svelte": "^8.5.2",
+    "formsnap": "1.0.1",
+    "gulp": "^4.0.2",
+    "gulp-zip": "^6.0.0",
+    "lucide-svelte": "^0.475.0",
+    "mode-watcher": "^0.5.1",
+    "paneforge": "^0.0.6",
+    "prettier": "^3.0.3",
+    "prettier-plugin-svelte": "^3.0.3",
+    "prettier-plugin-tailwindcss": "^0.6.10",
+    "svelte": "^4.2.1",
+    "svelte-preprocess": "^5.0.4",
+    "svelte-sonner": "^0.3.28",
+    "sveltekit-superforms": "^2.23.1",
+    "tailwind-merge": "^3.0.2",
+    "tailwind-variants": "^0.3.1",
+    "tailwindcss": "^3.4.17",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2",
+    "vaul-svelte": "^0.3.2",
+    "vite": "^4.4.11",
+    "zod": "^3.24.2"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.0.8",
+    "fuse.js": "^7.1.0",
+    "svelte-headless-table": "^0.18.3"
+  }
+}
