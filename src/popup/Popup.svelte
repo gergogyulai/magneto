@@ -51,18 +51,48 @@
         .length ?? 0
     isCollecting = result.isCollecting ?? false
     whitelistedHosts = result.whitelistedHosts ?? []
+
+    // Add listener for magnet link updates
+    chrome.runtime.onMessage.addListener((message) => {
+      if (message.type === 'MAGNET_LINKS_UPDATED') {
+        chrome.storage.local.get(['magnetLinks'], (result) => {
+          const links = result.magnetLinks || []
+          collectedMagnetLinks = links.length
+          collectedMagnetLinksThisSite = links.filter(
+            (link: MagnetRecord) => link.source.includes(currentHost)
+          ).length
+        })
+      }
+    })
   })
 
   function toggleCollection() {
     isCollecting = !isCollecting
     chrome.storage.sync.set({ isCollecting })
-    chrome.runtime.sendMessage({ type: 'TOGGLE_COLLECTION', isCollecting })
+    
+    if (isCollecting) {
+      // Execute content script when enabling collection
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const activeTab = tabs[0];
+        if (activeTab?.id) {
+          chrome.tabs.sendMessage(activeTab.id, { type: 'COLLECT_MAGNETS' });
+        }
+      });
+    }
   }
 
   function addCurrentHost() {
     if (currentHost && !whitelistedHosts.includes(currentHost)) {
       whitelistedHosts = [...whitelistedHosts, currentHost]
       chrome.storage.sync.set({ whitelistedHosts })
+      if (isCollecting) {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const activeTab = tabs[0];
+        if (activeTab?.id) {
+          chrome.tabs.sendMessage(activeTab.id, { type: 'COLLECT_MAGNETS' });
+        }
+      });
+    }
     }
   }
 
@@ -107,7 +137,10 @@
       <CardHeader>
         <div class="flex items-center justify-between">
           <CardTitle class="flex items-center gap-2"><Magnet/>Magneto</CardTitle>
-          <Switch checked={isCollecting} on:click={toggleCollection} />
+          <div class="flex items-center gap-2 text-muted-foreground">
+            <span class="text-sm">{isCollecting ? '' : 'Paused'}</span>
+            <Switch checked={isCollecting} on:click={toggleCollection} />
+          </div>
         </div>
       </CardHeader>
 
@@ -131,7 +164,7 @@
                 size="sm"
                 on:click={openSidePanel}
               >
-                View Magnets
+                Open Magnet Explorer
               </Button>
             <!-- </div> -->
           </div>
@@ -142,7 +175,10 @@
         <!-- Current Site Section -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-muted-foreground">Current site</h3>
+            <div class="flex flex-col gap-1">
+              <h3 class="text-sm font-medium text-muted-foreground">Current site</h3>
+              <span class="text-sm">{currentHost || 'No site detected'}</span>
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -150,12 +186,9 @@
               disabled={!currentHost || whitelistedHosts.includes(currentHost)}
             >
               <Plus class="w-4 h-4 mr-1" />
-              Whitelist
+              {whitelistedHosts.includes(currentHost)? 'Whitelisted' : 'Whitelist'}
             </Button>
           </div>
-          <Badge variant="outline" class="w-full justify-center">
-            {currentHost || 'No site detected'}
-          </Badge>
         </div>
 
         <!-- Whitelist Section -->

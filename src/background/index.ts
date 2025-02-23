@@ -1,4 +1,4 @@
-import { MagnetRecord, SavedMagnetLinks } from "../lib/types"
+import { MagnetRecord } from "../lib/types"
 
 console.log('background is running')
 
@@ -23,11 +23,17 @@ chrome.runtime.onMessage.addListener((request) => {
         const updatedLinks = [...existingLinks, ...newLinks];
         chrome.storage.local.set({ magnetLinks: updatedLinks }, () => {
           console.log('new magnet links have been appended to storage');
+          // Notify all UI components about the update
+          chrome.runtime.sendMessage({ 
+            type: 'MAGNET_LINKS_UPDATED',
+            totalCount: updatedLinks.length
+          });
         });
       }
     });
   }
 });
+
 
 function formatMagnetLinks(links: MagnetRecord[], format: string): { content: string; mimeType: string; extension: string } {
   switch (format) {

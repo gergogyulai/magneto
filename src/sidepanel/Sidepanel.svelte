@@ -89,6 +89,19 @@
     whitelistedHosts = result.whitelistedHosts ?? []
     // Save full list into local state.
     magnetLinksArray = magnetLinks.magnetLinks ?? []
+
+    // Add listener for magnet link updates
+    chrome.runtime.onMessage.addListener((message) => {
+      if (message.type === 'MAGNET_LINKS_UPDATED') {
+        chrome.storage.local.get(['magnetLinks'], (result) => {
+          magnetLinksArray = result.magnetLinks || [];
+          collectedMagnetLinks = magnetLinksArray.length;
+          collectedMagnetLinksThisSite = magnetLinksArray.filter(
+            (link) => link.source.includes(currentHost)
+          ).length;
+        });
+      }
+    });
   })
 
   // New function to delete a magnet link.
