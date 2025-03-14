@@ -80,7 +80,7 @@ pnpm run zip
 
 ## 🤝 Contributing
 
-PRs and issues welcome! 🙏
+PRs and issues welcome! 🙏 
 
 ## 📜 License
 
