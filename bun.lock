@@ -3,6 +3,9 @@
   "workspaces": {
     "": {
       "name": "magneto",
+      "dependencies": {
+        "@humanspeak/svelte-virtual-list": "^0.3.2",
+      },
       "devDependencies": {
         "@crxjs/vite-plugin": "^2.0.0-beta.31",
         "@internationalized/date": "^3.7.0",
@@ -107,6 +110,8 @@
     "@hapi/hoek": ["@hapi/hoek@9.3.0", "", {}, "sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ=="],
 
     "@hapi/topo": ["@hapi/topo@5.1.0", "", { "dependencies": { "@hapi/hoek": "^9.0.0" } }, "sha512-foQZKJig7Ob0BMAYBfcJk8d77QtOe7Wo4ox7ff1lQYoNNAb6jwcY1ncdoy2e9wQZzvNy7ODZCYJkK8kzmcAnAg=="],
+
+    "@humanspeak/svelte-virtual-list": ["@humanspeak/svelte-virtual-list@0.3.2", "", { "dependencies": { "esm-env": "^1.2.2" }, "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-kYzuUOEs7+O15V2YoDDRm4BZ0+afeoJclmw5uS/iaxrbBbAQpbiOytvScLfSIV7kyxs7oVMsnOJwfq8lkGc1CQ=="],
 
     "@internationalized/date": ["@internationalized/date@3.9.0", "", { "dependencies": { "@swc/helpers": "^0.5.0" } }, "sha512-yaN3brAnHRD+4KyyOsJyk49XUvj2wtbNACSqg0bz3u8t2VuzhC8Q5dfRnrSxjnnbDb+ienBnkn1TzQfE154vyg=="],
 

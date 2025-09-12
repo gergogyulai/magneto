@@ -1,12 +1,16 @@
+// content-script.ts
 import { MagnetRecord, RawMagnetLinkData } from '../lib/types';
 import { sourceAdapters, parseTorrentName } from '../lib/utils';
 
 console.info('contentScript is running');
 
+let observer: MutationObserver | null = null;
+let isExtracting = false; // Prevent multiple simultaneous extractions
+let lastExtractionTime = 0;
+const EXTRACTION_THROTTLE = 100; // Minimum time between extractions (ms)
+
 /**
  * Extracts magnet links from the current page.
- * It uses a source-specific adapter if available, otherwise, it falls back to a default method.
- * @returns An array of unique and processed MagnetRecord objects.
  */
 function extractMagnetLinks(): MagnetRecord[] {
   console.log('Extracting magnet links');
@@ -15,30 +19,30 @@ function extractMagnetLinks(): MagnetRecord[] {
   const currentDate = new Date().toISOString();
   let rawMagnetLinks: RawMagnetLinkData[] = [];
 
-  if (sourceAdapters[hostname]) {
-    console.log('Using adapter for', hostname);
-    rawMagnetLinks = sourceAdapters[hostname](window.document, window.location);
-  } else {
-    console.log(
-      'No adapter found for',
-      hostname,
-      'using default extraction method',
-    );
-    const links = document.querySelectorAll<HTMLAnchorElement>('a[href^="magnet:"]');
-    links.forEach((link) => {
-      const magnetLink = link.getAttribute('href');
-      if (magnetLink) {
-        rawMagnetLinks.push({
-          magnetLink: magnetLink,
-          name: parseTorrentName(magnetLink),
-        });
-      }
-    });
+  try {
+    if (sourceAdapters[hostname]) {
+      console.log('Using adapter for', hostname);
+      rawMagnetLinks = sourceAdapters[hostname](window.document, window.location);
+    } else {
+      console.log('No adapter found for', hostname, 'using default extraction method');
+      const links = document.querySelectorAll<HTMLAnchorElement>('a[href^="magnet:"]');
+      links.forEach((link) => {
+        const magnetLink = link.getAttribute('href');
+        if (magnetLink) {
+          rawMagnetLinks.push({
+            magnetLink: magnetLink,
+            name: parseTorrentName(magnetLink),
+          });
+        }
+      });
+    }
+
+    return processAndDeduplicateLinks(rawMagnetLinks, hostname, currentDate);
+  } catch (error) {
+    console.error('Error extracting magnet links:', error);
+    return [];
   }
-
-  return processAndDeduplicateLinks(rawMagnetLinks, hostname, currentDate);
 }
-
 
 function processAndDeduplicateLinks(
   rawLinks: RawMagnetLinkData[],
@@ -71,19 +75,22 @@ function processAndDeduplicateLinks(
   return uniqueMagnetRecords;
 }
 
-let observer: MutationObserver | null = null;
-
 /**
- * Sets up a MutationObserver to watch for changes in the DOM and extract magnet links
- * if collection is enabled and the host is whitelisted.
- * If an observer already exists, it will be disconnected and a new one created.
+ * Throttled extraction function to prevent excessive processing
  */
-function setupMagnetObserver() {
-  if (observer) {
-    observer.disconnect();
+async function throttledExtraction() {
+  const now = Date.now();
+  
+  if (isExtracting || (now - lastExtractionTime) < EXTRACTION_THROTTLE) {
+    console.log('Extraction throttled');
+    return;
   }
 
-  observer = new MutationObserver(async (mutations) => {
+  isExtracting = true;
+  lastExtractionTime = now;
+
+  try {
+    // Check if collection is enabled and host is whitelisted
     const result = await chrome.storage.sync.get(['isCollecting', 'whitelistedHosts']);
     const whitelistedHosts = result.whitelistedHosts || [];
     const currentHost = window.location.hostname;
@@ -91,9 +98,68 @@ function setupMagnetObserver() {
 
     if (result.isCollecting && isWhitelisted) {
       const magnetRecords = extractMagnetLinks();
+      
       if (magnetRecords.length > 0) {
-        chrome.runtime.sendMessage({ type: 'MAGNET_LINKS', magnetLinks: magnetRecords });
+        console.log(`Found ${magnetRecords.length} magnet links, sending to background`);
+        
+        // Send with response handling
+        chrome.runtime.sendMessage(
+          { 
+            type: 'MAGNET_LINKS', 
+            magnetLinks: magnetRecords 
+          },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              console.error('Error sending magnet links:', chrome.runtime.lastError.message);
+            } else {
+              console.log('Successfully sent magnet links, response:', response);
+            }
+          }
+        );
       }
+    } else {
+      console.log('Collection disabled or host not whitelisted:', { 
+        isCollecting: result.isCollecting, 
+        isWhitelisted,
+        currentHost 
+      });
+    }
+  } catch (error) {
+    console.error('Error in throttled extraction:', error);
+  } finally {
+    isExtracting = false;
+  }
+}
+
+/**
+ * Sets up a MutationObserver to watch for changes in the DOM
+ */
+function setupMagnetObserver() {
+  if (observer) {
+    observer.disconnect();
+  }
+
+  observer = new MutationObserver(async (mutations) => {
+    // Check if any mutations actually added new nodes with potential magnet links
+    const hasRelevantChanges = mutations.some(mutation => {
+      if (mutation.type === 'childList') {
+        const addedNodes = Array.from(mutation.addedNodes);
+        return addedNodes.some(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element;
+            // Check if the added element or its children might contain magnet links
+            return element.querySelector?.('a[href^="magnet:"]') ||
+                   (element as HTMLAnchorElement).href?.startsWith('magnet:');
+          }
+          return false;
+        });
+      }
+      return false;
+    });
+
+    if (hasRelevantChanges) {
+      console.log('Relevant DOM changes detected, triggering extraction');
+      await throttledExtraction();
     }
   });
 
@@ -101,6 +167,8 @@ function setupMagnetObserver() {
     childList: true,
     subtree: true,
   });
+
+  console.log('Magnet observer setup complete');
 }
 
 /**
@@ -110,34 +178,77 @@ function disconnectMagnetObserver() {
   if (observer) {
     observer.disconnect();
     observer = null;
+    console.log('Magnet observer disconnected');
   }
 }
 
 // Listen for messages from the background script or popup.
-chrome.runtime.onMessage.addListener(async (request) => {
-  if (request.type === 'TOGGLE_COLLECTION') {
-    if (request.isCollecting) {
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+  try {
+    if (request.type === 'TOGGLE_COLLECTION') {
+      console.log('Toggle collection message received:', request.isCollecting);
+      
+      if (request.isCollecting) {
+        await setupMagnetObserver();
+        // Trigger initial extraction
+        await throttledExtraction();
+      } else {
+        disconnectMagnetObserver();
+      }
+      
+      sendResponse({ success: true });
+      
+    } else if (request.type === 'COLLECT_MAGNETS') {
+      console.log('Manual collection requested');
+      
+      const result = await chrome.storage.sync.get(['whitelistedHosts']);
+      const whitelistedHosts = result.whitelistedHosts || [];
+      const currentHost = window.location.hostname;
+      const isWhitelisted = whitelistedHosts.includes(currentHost);
+
+      if (isWhitelisted) {
+        await throttledExtraction();
+        sendResponse({ success: true });
+      } else {
+        console.log('Host not whitelisted for manual collection');
+        sendResponse({ success: false, error: 'Host not whitelisted' });
+      }
+    }
+  } catch (error) {
+    console.error('Error handling message:', error);
+    sendResponse({ success: false, error: error.message });
+  }
+  
+  return true; // Keep message channel open
+});
+
+// Initialize observer when content script loads
+(async () => {
+  try {
+    const result = await chrome.storage.sync.get(['isCollecting']);
+    console.log('Initial collection state:', result.isCollecting);
+    
+    if (result.isCollecting) {
       setupMagnetObserver();
-    } else {
-      disconnectMagnetObserver();
+      // Give the page a moment to load, then do initial extraction
+      setTimeout(() => {
+        throttledExtraction();
+      }, 2000);
     }
-  } else if (request.type === 'COLLECT_MAGNETS') {
-    const result = await chrome.storage.sync.get(['whitelistedHosts']);
-    const whitelistedHosts = result.whitelistedHosts || [];
-    const currentHost = window.location.hostname;
-    const isWhitelisted = whitelistedHosts.includes(currentHost);
-
-    if (isWhitelisted) {
-      const magnetRecords = extractMagnetLinks();
-      console.log('Magnet records:', magnetRecords);
-      chrome.runtime.sendMessage({ type: 'MAGNET_LINKS', magnetLinks: magnetRecords });
-    }
+  } catch (error) {
+    console.error('Error initializing content script:', error);
   }
-});
+})();
 
-// Initialize observer if collection is enabled when the content script loads.
-chrome.storage.sync.get(['isCollecting'], (result) => {
-  if (result.isCollecting) {
-    setupMagnetObserver();
-  }
-});
+// Also extract when page is fully loaded (for SPAs that load content dynamically)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      throttledExtraction();
+    }, 1000);
+  });
+} else {
+  setTimeout(() => {
+    throttledExtraction();
+  }, 1000);
+}

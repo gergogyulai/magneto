@@ -1,41 +1,157 @@
+// background.ts or background.js
 import { MagnetRecord } from '../lib/types'
 
 console.log('background is running')
 
-chrome.runtime.onMessage.addListener((request) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'COUNT') {
     console.log('background has received a message from popup, and count is ', request?.count)
+    sendResponse({ success: true })
+    return true
   }
-})
 
-chrome.runtime.onMessage.addListener((request) => {
   if (request.type === 'MAGNET_LINKS') {
     console.log(
       'background has received a message from contentScript, and magnet links are ',
       request?.magnetLinks,
     )
 
+    // Handle async storage operations properly
+    handleNewMagnetLinks(request?.magnetLinks)
+      .then((result) => {
+        sendResponse({ success: true, ...result })
+      })
+      .catch((error) => {
+        console.error('Error handling magnet links:', error)
+        sendResponse({ success: false, error: error.message })
+      })
+    
+    return true // Keep message channel open for async response
+  }
+
+  if (request.type === 'EXPORT_MAGNETS') {
+    handleExportMagnets(request.format)
+      .then((result) => {
+        sendResponse(result)
+      })
+      .catch((error) => {
+        console.error('Error exporting magnets:', error)
+        sendResponse({ success: false, error: error.message })
+      })
+    
+    return true // Keep message channel open for async response
+  }
+})
+
+async function handleNewMagnetLinks(newMagnetLinks: MagnetRecord[]) {
+  return new Promise<{ addedCount: number; totalCount: number }>((resolve, reject) => {
     chrome.storage.local.get(['magnetLinks'], (result) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message))
+        return
+      }
+
       const existingLinks: MagnetRecord[] = result.magnetLinks || []
-      const newLinks: MagnetRecord[] = request?.magnetLinks.filter(
+      const filteredNewLinks: MagnetRecord[] = newMagnetLinks.filter(
         (newLink: MagnetRecord) =>
           !existingLinks.some((existingLink) => existingLink.magnetLink === newLink.magnetLink),
       )
 
-      if (newLinks.length > 0) {
-        const updatedLinks = [...existingLinks, ...newLinks]
+      if (filteredNewLinks.length > 0) {
+        const updatedLinks = [...existingLinks, ...filteredNewLinks]
+        
         chrome.storage.local.set({ magnetLinks: updatedLinks }, () => {
-          console.log('new magnet links have been appended to storage')
-          // Notify all UI components about the update
-          chrome.runtime.sendMessage({
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message))
+            return
+          }
+
+          console.log(`Added ${filteredNewLinks.length} new magnet links. Total: ${updatedLinks.length}`)
+          
+          // Notify all UI components about the update with consistent property names
+          const updateMessage = {
             type: 'MAGNET_LINKS_UPDATED',
-            totalCount: updatedLinks.length,
+            count: updatedLinks.length, // Use 'count' not 'totalCount'
+            addedCount: filteredNewLinks.length,
+            newLinks: filteredNewLinks
+          }
+          
+          // Send to all extension contexts (popup, options, etc.)
+          chrome.runtime.sendMessage(updateMessage).catch(() => {
+            // It's fine if no listeners are available (popup closed)
+            console.log('No message listeners available (popup might be closed)')
           })
+
+          // Also send individual new link messages for each new link
+          filteredNewLinks.forEach(link => {
+            chrome.runtime.sendMessage({
+              type: 'NEW_MAGNET_LINK',
+              count: updatedLinks.length,
+              newLink: link
+            }).catch(() => {
+              // Popup might not be open, that's fine
+            })
+          })
+
+          resolve({ 
+            addedCount: filteredNewLinks.length, 
+            totalCount: updatedLinks.length 
+          })
+        })
+      } else {
+        console.log('No new magnet links to add')
+        resolve({ 
+          addedCount: 0, 
+          totalCount: existingLinks.length 
         })
       }
     })
-  }
-})
+  })
+}
+
+async function handleExportMagnets(format: string) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(['magnetLinks'], (result) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message))
+        return
+      }
+
+      const magnetLinks = result.magnetLinks || []
+      const { content, mimeType, extension } = formatMagnetLinks(magnetLinks, format)
+
+      const blob = new Blob([content], { type: mimeType })
+      const reader = new FileReader()
+
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          chrome.downloads.download(
+            {
+              url: reader.result,
+              filename: `magnet-links.${extension}`,
+              saveAs: true,
+            },
+            (downloadId) => {
+              if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message))
+              } else {
+                resolve({ success: true, downloadId })
+              }
+            },
+          )
+        } else {
+          reject(new Error('Unexpected file reader result type'))
+        }
+      }
+
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'))
+      }
+
+      reader.readAsDataURL(blob)
+    })
+  })
+}
 
 function formatMagnetLinks(
   links: MagnetRecord[],
@@ -51,7 +167,7 @@ function formatMagnetLinks(
     case 'CSV':
       const csvContent = [
         'magnetLink,title,timestamp',
-        ...links.map((link) => `${link.magnetLink},"${link.name || ''}",${link.date}`),
+        ...links.map((link) => `"${link.magnetLink}","${(link.name || '').replace(/"/g, '""')}","${link.date}"`),
       ].join('\n')
       return {
         content: csvContent,
@@ -66,43 +182,3 @@ function formatMagnetLinks(
       }
   }
 }
-
-chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-  if (request.type === 'EXPORT_MAGNETS') {
-    chrome.storage.local.get(['magnetLinks'], (result) => {
-      if (chrome.runtime.lastError) {
-        sendResponse({ success: false, error: chrome.runtime.lastError.message })
-        return
-      }
-
-      const magnetLinks = result.magnetLinks || []
-      const { content, mimeType, extension } = formatMagnetLinks(magnetLinks, request.format)
-
-      const blob = new Blob([content], { type: mimeType })
-      const reader = new FileReader()
-
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          chrome.downloads.download(
-            {
-              url: reader.result,
-              filename: `magnet-links.${extension}`,
-              saveAs: true,
-            },
-            (downloadId) => {
-              if (chrome.runtime.lastError) {
-                sendResponse({ success: false, error: chrome.runtime.lastError.message })
-              } else {
-                sendResponse({ success: true, downloadId })
-              }
-            },
-          )
-        } else {
-          sendResponse({ success: false, error: 'Unexpected file reader result type' })
-        }
-      }
-      reader.readAsDataURL(blob)
-    })
-    return true
-  }
-})
