@@ -1,50 +1,60 @@
-name: Release Chrome Extension
+name: Chrome Extension Release
 
 on:
   push:
     tags:
-      - "v*.*.*" # Trigger on tags like v1.0.0
+      - 'v*' # Trigger on tags like v1.0.0, v1.0.1, etc.
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # Or your preferred Node.js version
+          node-version: '20' # Or your preferred Node.js version
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci # Use npm install if you don't have a lock file or prefer it
 
-      - name: Build extension
-        run: npm run zip
+      - name: Run build script
+        run: npm run build # Adjust this command based on your package.json build script
 
-      - name: Create Release
+      - name: Create extension zip
+        id: create_zip_step # Add an ID to this step to reference its outputs if needed
+        run: |
+          ZIP_FILE_NAME="chrome-extension-${{ steps.get_version.outputs.VERSION }}.zip"
+          # Assuming your build output is in a 'dist' directory.
+          # Adjust 'dist' to whatever your build script outputs to.
+          zip -r $ZIP_FILE_NAME dist/
+          # Correct way to make a variable available to subsequent steps
+          echo "ZIP_FILE_PATH=$ZIP_FILE_NAME" >> $GITHUB_ENV
+        working-directory: . # Ensure this runs in the root of the repo
+
+      - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: \${{ github.ref }}
-          release_name: Release \${{ github.ref }}
-          body: |
-            Automated release of the Chrome extension.
-            # Add release notes here if desired
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
 
-      - name: Upload zip file
-        id: upload-release-asset
+      - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: \${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./package/*.zip
-          asset_name: \${{ github.ref_name }}.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.ZIP_FILE_PATH }}
+          asset_name: ${{ env.ZIP_FILE_PATH }}
           asset_content_type: application/zip
