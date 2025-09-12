@@ -150,7 +150,7 @@
             <div class="text-2xl font-bold">{collectedMagnetLinks}</div>
             {#if currentHost}
               <span class="text-sm text-muted-foreground">
-                {collectedMagnetLinksThisSite} from this site
+                {collectedMagnetLinksThisSite} from this site)
               </span>
             {/if}
             <!-- <div class="flex gap-2"> -->

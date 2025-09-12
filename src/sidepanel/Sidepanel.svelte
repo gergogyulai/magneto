@@ -172,7 +172,7 @@
           <ul class="space-y-2">
             {#each filteredMagnetLinks as link, idx}
               <li class="flex items-center justify-between">
-                <span class="truncate">{parseTorrentName(link.magnetLink)}</span>
+                <span class="truncate">{link.name}</span>
                 <DropdownMenu.Root>
                   <DropdownMenu.Trigger>
                     <Button variant="ghost" size="icon">

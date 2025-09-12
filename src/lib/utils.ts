@@ -2,6 +2,8 @@ import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { cubicOut } from 'svelte/easing'
 import type { TransitionConfig } from 'svelte/transition'
+import { SourceAdapter } from './types'
+import { extToAdapter } from './adapters/ext.to'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -76,3 +78,7 @@ export function parseTorrentSize(magnetLink: string): number | null {
 
   return null
 }
+
+export const sourceAdapters: Record<string, SourceAdapter> = {
+  "ext.to": extToAdapter,
+};

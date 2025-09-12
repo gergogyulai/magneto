@@ -8,3 +8,10 @@ export type MagnetRecord = {
   date: string
   source: string
 }
+
+export type RawMagnetLinkData = {
+  magnetLink: string
+  name: string;
+}
+
+export type SourceAdapter = (document: Document, location: Location) => RawMagnetLinkData[];
