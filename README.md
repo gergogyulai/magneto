@@ -1,5 +1,5 @@
 > [!CAUTION]
-> This branch is dedicated to the **Magneto Rewrite**. Builds from this branch are under active development and are **experimental**. They may contain bugs, unfinished features, or breaking changes. **Do not use these builds for daily browsing.** Refer to the main branch for stable releases.
+> This branch is dedicated to the **Magneto Rewrite**. Builds from this branch are under active development and are **experimental**. They may contain bugs, unfinished features, or breaking changes. **Do not use these builds for daily browsing.** Refer to the [main](https://github.com/gergogyulai/magneto/tree/main) branch for stable [releases](https://github.com/gergogyulai/magneto/releases).
 
 # Magneto 🧲 (Rewrite Branch)
 
