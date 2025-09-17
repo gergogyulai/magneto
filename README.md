@@ -1,20 +1,49 @@
-# Magneto 🧲
+> [!CAUTION]
+> This branch is dedicated to the **Magneto Rewrite**. Builds from this branch are under active development and are **experimental**. They may contain bugs, unfinished features, or breaking changes. **Do not use these builds for daily browsing.** Refer to the main branch for stable releases.
 
-A privacy-focused Chrome extension for collecting magnet links. Built with Vite + Svelte + TypeScript and Manifest V3.
+# Magneto 🧲 (Rewrite Branch)
 
-## ✨ Features
+A privacy-focused Chrome extension for collecting magnet links. Currently undergoing a significant rewrite with Vite + Svelte 5 + TypeScript and Manifest V3.
 
-- **Auto-Detect:** Scans webpages for magnet links. 🔍
-- **Lightweight:** Minimal impact on browsing. 🚀
-- **Privacy-First:** Operates locally, no data tracking. 🔒
-- **Simple UI:** View, copy, and manage links easily. 🖱️
-- **Safe Collection:** Whitelist sites for trusted links. ✅
+## ✨ Features (Under Rewrite)
+
+-   **Auto-Detect:** Scans webpages for magnet links. 🔍
+-   **Lightweight:** Minimal impact on browsing. 🚀
+-   **Privacy-First:** Operates locally, no data tracking. 🔒
+-   **Simple UI:** View, copy, and manage links easily. 🖱️
+-   **Safe Collection:** Whitelist sites for trusted links. ✅
 
 ## Why Magneto?
 
-Torrent sites go down all the time. One day, a link is there, and the next, it’s gone until the site comes back. I got tired of losing access to torrents I meant to download but didn’t get around to. So I built Magneto—a simple, lightweight extension to collect and store magnet links, creating a personal cache in case sites go down.
+Torrent sites go down all the time. One day, a link is there, and the next,
+it’s gone until the site comes back. I got tired of losing access to torrents
+I meant to download but didn’t get around to. So I built Magneto—a simple,
+lightweight extension to collect and store magnet links, creating a personal
+cache in case sites go down.
 
-## ⬇️ Installing
+### The Great Rewrite: A Leap Forward for Magneto (Currently In Progress)
+
+Magneto is currently undergoing a significant rewrite, transitioning from
+Svelte 4 to **Svelte 5 (Rune API)** and Tailwind CSS 3 to **Tailwind CSS 4**.
+This isn't just an upgrade; it's a fundamental re-architecture aimed at
+delivering a much better experience. The rewrite is bringing about:
+
+-   **Unparalleled Performance:** By leveraging Svelte 5's new reactivity
+    system, Magneto aims to be faster and more efficient, ensuring an even
+    more minimal impact on your browsing experience. The UI is expected to be
+    snappier, and background operations optimized.
+-   **Enhanced Maintainability:** The move to Svelte 5 with its Rune API
+    significantly simplifies the codebase, making it more readable,
+    predictable, and easier to extend. This is crucial for faster development
+    of new features and quicker bug fixes in the future.
+-   **Modern Styling with Tailwind 4:** Upgrading to Tailwind CSS 4 streamlines
+    our styling process, reduces CSS bloat, and allows for even more rapid UI
+    development while maintaining Magneto's clean and intuitive aesthetic.
+-   **Future-Proofing:** These architectural changes lay a solid foundation
+    for future growth and innovation, ensuring Magneto remains a cutting-edge
+    and reliable tool for years to come.
+
+## ⬇️ Installing (Experimental Builds)
 
 You need chrome 114 or later to install the extension.
 
@@ -74,13 +103,14 @@ pnpm run zip
 
 ## 🛡️ Privacy
 
-- **No Data Collection:** We collect nothing.
-- **Local Only:** All processing is local.
-- **No External Servers:** No communication outside your browser.
+-   **No Data Collection:** We collect nothing.
+-   **Local Only:** All processing is local.
+-   **No External Servers:** No communication outside your browser.
 
 ## 🤝 Contributing
 
-PRs and issues welcome! 🙏 
+PRs and issues welcome! 🙏 Please note that development on this branch is
+focused on the rewrite.
 
 ## 📜 License
 
