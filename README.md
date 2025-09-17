@@ -39,7 +39,7 @@ You need chrome 114 or later to install the extension.
 
 ## 👨‍💻 Developing
 
-Node.js >= 14 or equivalent required
+Node.js >= 22 or equivalent required
 
 1.  Clone:
 
