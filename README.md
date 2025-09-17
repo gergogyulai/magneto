@@ -5,22 +5,6 @@
 
 A privacy-focused Chrome extension for collecting magnet links. Currently undergoing a significant rewrite with Vite + Svelte 5 + TypeScript and Manifest V3.
 
-## ✨ Features (Under Rewrite)
-
--   **Auto-Detect:** Scans webpages for magnet links. 🔍
--   **Lightweight:** Minimal impact on browsing. 🚀
--   **Privacy-First:** Operates locally, no data tracking. 🔒
--   **Simple UI:** View, copy, and manage links easily. 🖱️
--   **Safe Collection:** Whitelist sites for trusted links. ✅
-
-## Why Magneto?
-
-Torrent sites go down all the time. One day, a link is there, and the next,
-it’s gone until the site comes back. I got tired of losing access to torrents
-I meant to download but didn’t get around to. So I built Magneto—a simple,
-lightweight extension to collect and store magnet links, creating a personal
-cache in case sites go down.
-
 ### The Great Rewrite: A Leap Forward for Magneto (Currently In Progress)
 
 Magneto is currently undergoing a significant rewrite, transitioning from
@@ -100,12 +84,6 @@ bun run zip # creates a zip file in the package folder
 npm run zip
 pnpm run zip
 ```
-
-## 🛡️ Privacy
-
--   **No Data Collection:** We collect nothing.
--   **Local Only:** All processing is local.
--   **No External Servers:** No communication outside your browser.
 
 ## 🤝 Contributing
 
