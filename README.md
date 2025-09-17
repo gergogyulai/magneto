@@ -1,3 +1,5 @@
+> [!NOTE]
+> A major [rewrite](https://github.com/gergogyulai/magneto/tree/rewrite) of Magneto is in progress for improved performance and new features! Stay tuned for updates.
 # Magneto 🧲
 
 A privacy-focused Chrome extension for collecting magnet links. Built with Vite + Svelte + TypeScript and Manifest V3.
