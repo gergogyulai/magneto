@@ -1,11 +1,10 @@
 <!-- src/lib/components/magnet-list.svelte -->
 <script lang="ts">
-  import { MagnetRecord } from '$lib/types'
-  import { parseTorrentName } from '$lib/utils'
-  import { Button } from '$lib/components/ui/button'
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
+  import { MagnetRecord } from '@/lib/types'
+  import { parseTorrentName } from '@/lib/utils'
+  import { Button } from '@/lib/components/ui/button'
+  import * as DropdownMenu from '@/lib/components/ui/dropdown-menu'
   import { EllipsisVertical } from 'lucide-svelte'
-  import SvelteVirtualList from '@humanspeak/svelte-virtual-list'
 
   export let magnetLinks: MagnetRecord[] = []
 
@@ -39,10 +38,10 @@
                 >Source: {link.source}</DropdownMenu.Item
               >
               <DropdownMenu.Separator />
-              <DropdownMenu.Item on:click={() => onCopy(link)}>Copy magnet link</DropdownMenu.Item>
+              <DropdownMenu.Item onclick={() => onCopy(link)}>Copy magnet link</DropdownMenu.Item>
               <!-- Potentially open in client, but requires a way to handle the magnet URI scheme -->
               <DropdownMenu.Item href={link.magnetLink} target="_blank">Open in client</DropdownMenu.Item>
-              <DropdownMenu.Item on:click={() => onDelete(link)} class="text-destructive"
+              <DropdownMenu.Item onclick={() => onDelete(link)} class="text-destructive"
                 >Remove</DropdownMenu.Item
               >
             </DropdownMenu.Group>

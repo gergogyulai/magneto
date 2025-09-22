@@ -1,9 +1,9 @@
 <script lang="ts">
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+  import * as DropdownMenu from "@/lib/components/ui/dropdown-menu";
 
   function exportMagnets(format: "TXT" | "JSON" | "CSV") {
     console.log(`Exporting magnet links in ${format} format`);
-    chrome.runtime.sendMessage({ type: 'EXPORT_MAGNETS', format });
+    browser.runtime.sendMessage({ type: 'EXPORT_MAGNETS', format });
   }
 </script>
  

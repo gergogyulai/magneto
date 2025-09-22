@@ -1,0 +1,45 @@
+import { defineConfig } from 'wxt';
+import tailwindcss from '@tailwindcss/vite';
+import packageData from './package.json';
+
+const buildType = process.env.NODE_ENV || 'production';
+
+const suffixMap: Record<string, string> = {
+  development: '-dev',
+  alpha: '-alpha',
+  beta: '-beta',
+  rc: '-rc',
+  release_candidate: '-rc',
+  production: '-release',
+};
+
+function getVersionSuffix(type: string): string {
+  return suffixMap[type.toLowerCase()] || '';
+}
+
+// See https://wxt.dev/api/config.html
+export default defineConfig({
+  srcDir: 'src',
+  modules: ['@wxt-dev/module-svelte'],
+  manifestVersion: 3,
+  targetBrowsers: ['chrome', 'firefox'],
+  manifest: {
+    name: `${packageData.displayName}${process.env.NODE_ENV === 'development' ? ` 🧰 Dev` : ''}`,
+    version: `${packageData.version}`,
+    description: packageData.description,
+    permissions: ['storage', 'tabs', 'scripting', 'activeTab']
+  },
+  zip: {
+    artifactTemplate: `{{name}}-${packageData.version}${getVersionSuffix(buildType)}-{{browser}}.zip`,
+    compressionLevel: 9
+  },
+  webExt:{
+    keepProfileChanges: true,
+    startUrls: [
+      "https://v0-random-magnet-links.vercel.app/"
+    ]
+  },
+  vite: () => ({
+    plugins: [tailwindcss()],
+  }),
+});
