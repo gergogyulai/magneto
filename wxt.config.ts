@@ -24,7 +24,7 @@ export default defineConfig({
   manifestVersion: 3,
   targetBrowsers: ['chrome', 'firefox'],
   manifest: {
-    name: `${packageData.displayName}${process.env.NODE_ENV === 'development' ? ` 🧰 Dev` : ''}`,
+    name: `${packageData.displayName}${process.env.NODE_ENV === 'development' ? ` 🧰 dev` : ''}`,
     version: `${packageData.version}`,
     description: packageData.description,
     permissions: ['storage', 'tabs', 'scripting', 'activeTab']
