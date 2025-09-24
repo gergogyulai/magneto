@@ -1,17 +1,20 @@
 export type SavedMagnetLinks = {
-  magnetLinks: MagnetRecord[]
-}
+  magnetLinks: MagnetRecord[];
+};
 
 export type MagnetRecord = {
-  magnetLink: string
-  name: string | null
-  date: string
-  source: string
-}
+  magnetLink: string;
+  name: string | null;
+  date: string;
+  source: string;
+};
 
 export type RawMagnetLinkData = {
-  magnetLink: string
+  magnetLink: string;
   name: string;
-}
+};
 
-export type SourceAdapter = (document: Document, location: Location) => RawMagnetLinkData[];
+export type SourceAdapter = (
+  document: Document,
+  location: Location
+) => RawMagnetLinkData[];

@@ -1,4 +1,4 @@
-<!-- <script lang="ts">
+<script lang="ts">
   import '../app.css'
   import { onMount, onDestroy } from 'svelte'
   import { Button } from '@/lib/components/ui/button'
@@ -7,17 +7,18 @@
   import { ScrollArea } from '@/lib/components/ui/scroll-area'
   import { MagnetRecord } from '@/lib/types'
   import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/lib/components/ui/card'
-  import { Link, Magnet, ChevronsUpDown, Check, Trash2 } from 'lucide-svelte'
+  import { Link, Magnet, ChevronsUpDown, Check, Trash2 } from '@lucide/svelte'
   import { Input } from '@/lib/components/ui/input'
   import * as Command from '@/lib/components/ui/command'
   import * as Popover from '@/lib/components/ui/popover'
-  import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js'
-  import { cn } from '$lib/utils.js'
-  import ExportDropdown from '$lib/components/export-dropdown.svelte'
-  import MagnetList from '$lib/components/magnet-list.svelte'
-  
+  import * as AlertDialog from '@/lib/components/ui/alert-dialog'
+  import { cn } from '@/lib/utils'
+  import ExportDropdown from '@/lib/components/export-dropdown.svelte'
+  import MagnetList from '@/lib/components/magnet-list.svelte'
+
   // WXT imports
   import { browser } from 'wxt/browser'
+  import { storage } from 'wxt/storage'
 
   // State variables for the component
   let isCollecting = false
@@ -82,7 +83,7 @@
   // --- Utility functions for data handling ---
   async function updateMagnetLinksFromStorage() {
     try {
-      const fetchedLinks: MagnetRecord[] = await storage.getItem('local:magnetLinks', { defaultValue: [] })
+      const fetchedLinks: MagnetRecord[] = (await storage.getItem('local:magnetLinks')) ?? []
 
       // Only update if the data has actually changed
       const currentLinksString = JSON.stringify(allMagnetLinks)
@@ -109,7 +110,8 @@
       
       // Notify other instances/tabs about the update
       try {
-        await sendMessage('MAGNET_LINKS_UPDATED', { 
+        await browser.runtime.sendMessage({ 
+          type: 'MAGNET_LINKS_UPDATED',
           count: allMagnetLinks.length 
         })
       } catch (error) {
@@ -123,22 +125,21 @@
 
   // --- Real-time update handlers ---
   function setupMessageListener() {
-    messageListener = onMessage('MAGNET_LINKS_UPDATED', (message) => {
-      console.log('Received MAGNET_LINKS_UPDATED message')
-      updateMagnetLinksFromStorage()
-    })
+    const messageHandler = (message: any) => {
+      if (message.type === 'MAGNET_LINKS_UPDATED') {
+        console.log('Received MAGNET_LINKS_UPDATED message')
+        updateMagnetLinksFromStorage()
+      } else if (message.type === 'NEW_MAGNET_LINK') {
+        console.log('Received NEW_MAGNET_LINK message')
+        updateMagnetLinksFromStorage()
+      }
+    }
     
-    // Also listen for new magnet link messages
-    const newMagnetListener = onMessage('NEW_MAGNET_LINK', (message) => {
-      console.log('Received NEW_MAGNET_LINK message')
-      updateMagnetLinksFromStorage()
-    })
+    browser.runtime.onMessage.addListener(messageHandler)
     
-    // Cleanup function that removes both listeners
-    const originalCleanup = messageListener
+    // Return cleanup function
     messageListener = () => {
-      originalCleanup()
-      newMagnetListener()
+      browser.runtime.onMessage.removeListener(messageHandler)
     }
   }
 
@@ -150,11 +151,11 @@
   }
 
   function setupStorageWatcher() {
-    // Watch for storage changes
-    storageWatcher = storage.watch('local:magnetLinks', () => {
-      console.log('Storage changed, updating links')
-      updateMagnetLinksFromStorage()
-    })
+    // Since storage.watch may not be available, we'll rely on message-based updates
+    console.log('Storage watcher setup - relying on message updates')
+    storageWatcher = () => {
+      // Cleanup function placeholder
+    }
   }
 
   function cleanupListeners() {
@@ -221,8 +222,8 @@
       }
 
       // Load initial settings
-      isCollecting = await storage.getItem('sync:isCollecting', { defaultValue: false })
-      whitelistedHosts = await storage.getItem('sync:whitelistedHosts', { defaultValue: [] })
+      isCollecting = (await storage.getItem('sync:isCollecting')) ?? false
+      whitelistedHosts = (await storage.getItem('sync:whitelistedHosts')) ?? []
 
       // Initial load of magnet links
       await updateMagnetLinksFromStorage()
@@ -284,7 +285,7 @@
                 size="lg"
                 class="flex-1 text-destructive hover:text-destructive"
                 disabled={collectedMagnetLinks === 0}
-                on:click={() => (showDeleteAllDialog = true)}
+                onclick={() => (showDeleteAllDialog = true)}
               >
                 <Trash2 class="w-4 h-4 mr-2" />
                 Delete All
@@ -307,13 +308,13 @@
 
           <div class="flex gap-2 mb-4 flex-wrap">
             <Popover.Root bind:open={openSourcePopover}>
-              <Popover.Trigger asChild let:builder>
+              <Popover.Trigger let:builder>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={openSourcePopover}
                   class="w-[150px] justify-between"
-                  builders={[builder]}
+                  {...builder}
                 >
                   {selectedSourceFilter
                     ? sourceOptions.find((src) => src.value === selectedSourceFilter)?.label
@@ -351,13 +352,13 @@
             </Popover.Root>
 
             <Popover.Root bind:open={openOrderPopover}>
-              <Popover.Trigger asChild let:builder>
+              <Popover.Trigger let:builder>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={openOrderPopover}
                   class="w-[180px] justify-between"
-                  builders={[builder]}
+                  {...builder}
                 >
                   {selectedOrder
                     ? orderOptions.find((order) => order.value === selectedOrder)?.label
@@ -416,7 +417,7 @@
         <AlertDialog.Footer>
           <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
           <AlertDialog.Action
-            on:click={handleDeleteAll}
+            onclick={handleDeleteAll}
             class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Delete All
@@ -426,4 +427,3 @@
     </AlertDialog.Root>
   {/if}
 </div>
--->

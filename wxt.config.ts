@@ -27,7 +27,7 @@ export default defineConfig({
     name: `${packageData.displayName}${process.env.NODE_ENV === 'development' ? ` 🧰 dev` : ''}`,
     version: `${packageData.version}`,
     description: packageData.description,
-    permissions: ['storage', 'tabs', 'scripting', 'activeTab']
+    permissions: ['storage', 'tabs', 'scripting', 'activeTab', "downloads"]
   },
   zip: {
     artifactTemplate: `{{name}}-${packageData.version}${getVersionSuffix(buildType)}-{{browser}}.zip`,
