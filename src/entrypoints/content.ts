@@ -4,7 +4,7 @@ import { parseTorrentName } from '@/lib/utils';
 import { sourceAdapters } from '@/lib/adapters';
 
 export default defineContentScript({
-  matches: ['<all_urls>'],
+  matches: ['https://*/*', 'http://*/*'],
   runAt: 'document_end',
   matchAboutBlank: false,
   registration: 'manifest',
