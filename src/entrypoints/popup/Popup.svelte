@@ -54,10 +54,7 @@
       (link: MagnetRecord) => link.source === currentTab.hostname
     ).length
   );
-
-  let isLoading = $state(false);
-
-  const isCurrentHostWhitelisted = $derived(
+  let isCurrentHostWhitelisted = $derived(
     currentTab.hostname && whitelistedHosts.value.includes(currentTab.hostname)
   );
 
@@ -124,16 +121,7 @@
 
 <div class="w-80 select-none">
   <Card class="border-0 shadow-none">
-    {#if isLoading}
-      <CardContent
-        class="flex flex-col items-center justify-center py-8 text-center"
-      >
-        <div class="rounded-full bg-muted p-3 mb-4">
-          <Activity class="h-6 w-6 text-muted-foreground animate-spin" />
-        </div>
-        <p class="text-sm text-muted-foreground">Loading...</p>
-      </CardContent>
-    {:else if isBuiltInChrome}
+    {#if isBuiltInChrome}
       <CardContent
         class="flex flex-col items-center justify-center py-8 text-center"
       >
