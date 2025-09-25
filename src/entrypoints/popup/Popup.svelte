@@ -120,7 +120,7 @@
 </script>
 
 <div class="w-80 select-none">
-  <Card class="border-0 shadow-none">
+  <Card class="border-0 shadow-none gap-4">
     {#if isBuiltInChrome}
       <CardContent
         class="flex flex-col items-center justify-center py-8 text-center"
@@ -136,7 +136,7 @@
       </CardContent>
     {:else}
       <!-- Header -->
-      <CardHeader class="pb-4">
+      <CardHeader>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div class="rounded-lg bg-primary/10 p-2">
@@ -151,7 +151,7 @@
           </div>
           <div class="flex items-center gap-2">
             <div class="flex items-center gap-1.5">
-              {#if isCollecting}
+              {#if isCollecting.value}
                 <Activity class="h-3 w-3 text-green-500" />
                 <span class="text-xs text-muted-foreground">Active</span>
               {:else}
@@ -185,19 +185,18 @@
             </div>
           </div>
 
-          <Button onclick={openSidePanel} class="w-full" size="sm">
-            <ExternalLink class="h-4 w-4 mr-2" />
+          <Button onclick={openSidePanel} class="w-full" >
+            <ExternalLink class="h-4 w-4" />
             Open Magnet Explorer
           </Button>
         </div>
 
-        <Separator />
 
         <!-- Current Site Section -->
-        <div class="space-y-3">
+        <div class="space-y-2">
           <div class="flex items-center gap-2 mb-3">
             <Shield class="h-4 w-4 text-muted-foreground" />
-            <h3 class="text-sm font-medium">Site Management</h3>
+            <h3 class="text-sm font-medium">Whitelist Management</h3>
           </div>
 
           <div
@@ -229,7 +228,7 @@
         </div>
 
         <!-- Whitelist Section -->
-        <div class="space-y-3">
+        <div class="space-y-2">
           <div class="flex items-center justify-between">
             <h4 class="text-sm font-medium text-muted-foreground">
               Whitelisted Sites ({whitelistedHosts.value.length})
