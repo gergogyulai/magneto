@@ -1,6 +1,6 @@
 {
   "name": "magneto",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "displayName": "Magneto",
   "description": "Scrapes, collects and stores magnet links locally.",
   "license": "MIT",
