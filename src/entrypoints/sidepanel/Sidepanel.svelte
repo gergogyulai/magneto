@@ -18,7 +18,7 @@
     return window.location.hostname;
   };
 
-  const magnetStash = createStorageState<MagnetRecord[]>('magnetLinks', []);
+  const magnetStash = createStorageState<MagnetRecord[]>('local:magnetLinks', []);
 
   let searchTerm = $state<string>('');
 
