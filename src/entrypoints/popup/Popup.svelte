@@ -34,16 +34,17 @@
     source: string;
   };
 
-  const magnetStash = createStorageState<MagnetRecord[]>(
-    "local:magnetLinks",
+  let magnetStash = createStorageState<MagnetRecord[]>(
+    "local:magneto-stash",
     []
   );
-  const whitelistedHosts = createStorageState<string[]>(
-    "sync:whitelistedHosts",
+  
+  let whitelistedHosts = createStorageState<string[]>(
+    "sync:magneto-whitelistedHosts",
     []
   );
-  const isCollecting = createStorageState<boolean>("sync:isCollecting", false);
-
+  let isCollecting = createStorageState<boolean>("sync:magneto-isCollecting", false);
+  console.log('isCollecting', isCollecting.value);
   let isBuiltInChrome = $derived(
     currentTab.protocol === "chrome:" ||
       currentTab.protocol === "chrome-devtools:"
@@ -61,10 +62,9 @@
 
   async function toggleCollection() {
     try {
-      let isCollectingTemp = !isCollecting.value;
-      await browser.storage.sync.set({ isCollecting: isCollectingTemp });
+      isCollecting.value = !isCollecting.value;
 
-      if (isCollecting && currentTab.tabId) {
+      if (isCollecting.value && currentTab.tabId) {
         await browser.tabs.sendMessage(currentTab.tabId, {
           type: "COLLECT_MAGNETS",
         });
@@ -162,7 +162,7 @@
               </div>
               <Switch
                 checked={isCollecting.value}
-                onCheckedChange={toggleCollection}
+                onCheckedChange={() => {toggleCollection()}}
               />
             </div>
           </div>

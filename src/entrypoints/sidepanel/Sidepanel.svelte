@@ -28,9 +28,11 @@
   };
 
   const magnetStash = createStorageState<MagnetRecord[]>(
-    "local:magnetLinks",
+    "local:magneto-stash",
     []
   );
+
+  console.log(magnetStash.value)
 
   let searchTerm = $state<string>("");
 

@@ -3,5 +3,5 @@
 	let { children } = $props();
 </script>
 
-<ModeWatcher modeStorageKey="magneto-mode-watcher-mode" themeStorageKey="magneto-mode-watcher-theme" />
+<ModeWatcher modeStorageKey="magneto-mode-watcher-mode" />
 {@render children()}

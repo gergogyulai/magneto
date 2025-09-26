@@ -31,7 +31,7 @@ async function handleNewMagnetLinks(
   newMagnetLinks: MagnetRecord[]
 ): Promise<{ addedCount: number; totalCount: number }> {
   const existingLinks: MagnetRecord[] =
-    (await storage.getItem("local:magnetLinks")) || [];
+    (await storage.getItem("local:magneto-stash")) || [];
 
   const newLinks = newMagnetLinks.filter(
     (link) =>
@@ -42,7 +42,7 @@ async function handleNewMagnetLinks(
     return { addedCount: 0, totalCount: existingLinks.length };
 
   const updatedLinks = [...existingLinks, ...newLinks];
-  await storage.setItem("local:magnetLinks", updatedLinks);
+  await storage.setItem("local:magneto-stash", updatedLinks);
 
   const message = {
     type: "MAGNET_LINKS_UPDATED",

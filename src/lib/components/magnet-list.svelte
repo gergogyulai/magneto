@@ -7,11 +7,6 @@
   import { EllipsisVertical } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
 
-  // export let magnetLinks: MagnetRecord[] = [];
-
-
-  // export let onDelete: (link: MagnetRecord) => void;
-
   let { magnetLinks = [] } : { magnetLinks: MagnetRecord[] } = $props();
   
   let displayLinks = $derived(magnetLinks.map((link) => ({
