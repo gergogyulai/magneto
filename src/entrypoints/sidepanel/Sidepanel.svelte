@@ -1,65 +1,86 @@
 <script lang="ts">
-  import type { MagnetRecord } from '@/lib/types';
+  import type { MagnetRecord } from "@/lib/types";
 
-  import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/lib/components/ui/card';
-  import { Input } from '@/lib/components/ui/input';
-  import { Separator } from '@/lib/components/ui/separator';
-  import { Popover } from '@/lib/components/ui/popover';
-  import { Command } from '@/lib/components/ui/command';
+  import {
+    Card,
+    CardAction,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+  } from "@/lib/components/ui/card";
+  import { Input } from "@/lib/components/ui/input";
+  import { Separator } from "@/lib/components/ui/separator";
+  import { Popover } from "@/lib/components/ui/popover";
+  import { Command } from "@/lib/components/ui/command";
 
-  import { Button } from '@/lib/components/ui/button';
-  import { Magnet, Link, Trash2 } from '@lucide/svelte';
-  import ExportDropdown from '@/lib/components/export-dropdown.svelte';
-  import MagnetList from '@/lib/components/magnet-list.svelte';
-  import { Toaster } from '@/lib/components/ui/sonner';
-  import { createStorageState } from '@/lib/reactive-localstorage.svelte';
-  
+  import { Button } from "@/lib/components/ui/button";
+  import { Magnet, Link, Trash2 } from "@lucide/svelte";
+  import ExportDropdown from "@/lib/components/export-dropdown.svelte";
+  import MagnetList from "@/lib/components/magnet-list.svelte";
+  import { Toaster } from "@/lib/components/ui/sonner";
+  import { createStorageState } from "@/lib/reactive-localstorage.svelte";
+  import GlobalLayout from "@/lib/components/global-layout.svelte";
+
   const getCurrentHost = () => {
     return window.location.hostname;
   };
 
-  const magnetStash = createStorageState<MagnetRecord[]>('local:magnetLinks', []);
+  const magnetStash = createStorageState<MagnetRecord[]>(
+    "local:magnetLinks",
+    []
+  );
 
-  let searchTerm = $state<string>('');
+  let searchTerm = $state<string>("");
 
   let filteredMagnetLinks = $derived<MagnetRecord[]>(
-    !searchTerm.trim() 
+    !searchTerm.trim()
       ? magnetStash.value
-      : magnetStash.value.filter((link: MagnetRecord) => 
-          (link.name || '').toLowerCase().includes(searchTerm.toLowerCase().trim())
+      : magnetStash.value.filter((link: MagnetRecord) =>
+          (link.name || "")
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase().trim())
         )
   );
-  
+
   let collectedMagnetLinks = $derived<number>(filteredMagnetLinks.length);
   let collectedMagnetLinksThisSite = $derived<number>(
-    filteredMagnetLinks.filter((link: MagnetRecord) => link.source === getCurrentHost()).length
+    filteredMagnetLinks.filter(
+      (link: MagnetRecord) => link.source === getCurrentHost()
+    ).length
   );
   let currentHost = $derived<string | null>(getCurrentHost() || null);
-  
+
   let totalMagnetLinks = $derived<number>(magnetStash.value.length);
   let totalMagnetLinksThisSite = $derived<number>(
-    magnetStash.value.filter((link: MagnetRecord) => link.source === getCurrentHost()).length
+    magnetStash.value.filter(
+      (link: MagnetRecord) => link.source === getCurrentHost()
+    ).length
   );
 
-  let filteringSourceOptions = $derived<Array<{ label: string; value: string | null }>>((
+  let filteringSourceOptions = $derived<
+    Array<{ label: string; value: string | null }>
+  >(
     magnetStash.value
-      .map((link: MagnetRecord) => link.source || 'Unknown Source')
+      .map((link: MagnetRecord) => link.source || "Unknown Source")
       .filter((value, index, self) => self.indexOf(value) === index)
       .map((source) => ({
-        label: source === 'Unknown Source' ? source : (new URL(source)).hostname,
+        label: source === "Unknown Source" ? source : new URL(source).hostname,
         value: source,
       }))
       .sort((a, b) => a.label.localeCompare(b.label))
-      .concat([{ label: 'All Sources', value: "" }])
-  ));
+      .concat([{ label: "All Sources", value: "" }])
+  );
   let filteringSelectedSourceOption = $state<string | null>("");
 
   let isLoading = $derived(!magnetStash.initialized);
   let isSearching = $derived(searchTerm.trim().length > 0);
 </script>
 
-<Toaster />
-<div class="select-none">
+<GlobalLayout>
+  <Toaster />
+  <div class="select-none">
     <Card class="min-w-80 rounded-none">
       <CardHeader class="pb-3">
         <div class="flex items-center justify-between">
@@ -81,7 +102,7 @@
                 {collectedMagnetLinksThisSite} from {currentHost}
               </span>
             {/if}
-            
+
             <div class="flex gap-2 mt-2">
               <ExportDropdown />
               <Button
@@ -90,7 +111,9 @@
                 class="flex-1 text-destructive hover:text-destructive"
                 disabled={collectedMagnetLinks === 0}
                 onclick={() => {
-                  if (confirm('Are you sure you want to delete all magnet links?')) {
+                  if (
+                    confirm("Are you sure you want to delete all magnet links?")
+                  ) {
                     storage.removeItem("local:magnetLinks");
                   }
                 }}
@@ -105,7 +128,9 @@
         <Separator />
 
         <section aria-labelledby="magnet-list-controls">
-          <h2 id="magnet-list-controls" class="sr-only">Magnet Link Controls</h2>
+          <h2 id="magnet-list-controls" class="sr-only">
+            Magnet Link Controls
+          </h2>
           <Input
             type="text"
             placeholder="Search magnet links..."
@@ -113,7 +138,6 @@
             class="mb-3"
             aria-label="Search magnet links"
           />
-
 
           <!-- <div class="flex gap-2 mb-4 flex-wrap">
             <Popover.Root bind:open={openSourcePopover}>
@@ -205,11 +229,12 @@
         </section>
 
         <section aria-labelledby="magnet-links-heading">
-          <h2 id="magnet-links-heading" class="sr-only">Collected Magnet Links</h2>
-          <MagnetList
-            magnetLinks={filteredMagnetLinks}
-          />
+          <h2 id="magnet-links-heading" class="sr-only">
+            Collected Magnet Links
+          </h2>
+          <MagnetList magnetLinks={filteredMagnetLinks} />
         </section>
       </CardContent>
     </Card>
-</div>
+  </div>
+</GlobalLayout>

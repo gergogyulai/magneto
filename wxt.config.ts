@@ -35,8 +35,17 @@ export default defineConfig({
   },
   webExt:{
     keepProfileChanges: true,
+    openDevtools: true,
+    binaries: {
+      chrome: "/Applications/Google Chrome Dev.app/Contents/MacOS/Google Chrome Dev",
+    },
     startUrls: [
-      "https://v0-random-magnet-links.vercel.app/"
+      "https://v0-random-magnet-links.vercel.app/",
+      "https://web.archive.org/web/20250226103720/https://torrentgalaxy.to/",
+      "https://knaben.org/browse/"
+    ],
+    chromiumArgs: [
+      '--user-data-dir=./.wxt/chrome-data',
     ]
   },
   vite: () => ({
