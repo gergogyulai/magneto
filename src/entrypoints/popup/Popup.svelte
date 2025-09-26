@@ -23,7 +23,7 @@
     Pause,
   } from "@lucide/svelte";
   import { browser } from "wxt/browser";
-  import { createStorageState } from "@/lib/reactive-localstorage.svelte";
+  import { createStorageState } from "@/lib/reactive-localstorage-readonly.svelte";
   import { currentTab } from "@/lib/current-host.svelte";
   import GlobalLayout from "@/lib/components/global-layout.svelte";
 
@@ -34,22 +34,11 @@
     source: string;
   };
 
-  let magnetStash = createStorageState<MagnetRecord[]>(
-    "local:magneto-stash",
-    []
-  );
-  
-  let whitelistedHosts = createStorageState<string[]>(
-    "sync:magneto-whitelistedHosts",
-    []
-  );
+  let magnetStash = createStorageState<MagnetRecord[]>("local:magneto-stash", []);
+  let whitelistedHosts = createStorageState<string[]>("sync:magneto-whitelistedHosts", []);
   let isCollecting = createStorageState<boolean>("sync:magneto-isCollecting", false);
-  console.log('isCollecting', isCollecting.value);
-  let isBuiltInChrome = $derived(
-    currentTab.protocol === "chrome:" ||
-      currentTab.protocol === "chrome-devtools:"
-  );
 
+  let isBuiltInChrome = $derived(currentTab.protocol === "chrome:");
   let totalMagnetLinks = $derived<number>(magnetStash.value.length);
   let totalMagnetLinksThisSite = $derived<number>(
     magnetStash.value.filter(
@@ -62,7 +51,7 @@
 
   async function toggleCollection() {
     try {
-      isCollecting.value = !isCollecting.value;
+      await storage.setItem("sync:magneto-isCollecting", !isCollecting.value);
 
       if (isCollecting.value && currentTab.tabId) {
         await browser.tabs.sendMessage(currentTab.tabId, {
@@ -78,9 +67,7 @@
     if (!currentTab.hostname || isCurrentHostWhitelisted) return;
 
     try {
-      await browser.storage.sync.set({
-        whitelistedHosts: [...whitelistedHosts.value, currentTab.hostname],
-      });
+      await storage.setItem("sync:magneto-whitelistedHosts", [...whitelistedHosts.value, currentTab.hostname]);
 
       if (isCollecting && currentTab.tabId) {
         await browser.tabs.sendMessage(currentTab.tabId, {
@@ -94,9 +81,7 @@
 
   async function removeHost(host: string) {
     try {
-      await browser.storage.sync.set({
-        whitelistedHosts: whitelistedHosts.value.filter((h) => h !== host),
-      });
+      await storage.setItem("sync:magneto-whitelistedHosts", whitelistedHosts.value.filter((h) => h !== host));
     } catch (error) {
       console.error("Failed to remove host:", error);
     }

@@ -1,9 +1,9 @@
 // background.ts
-import type { MagnetRecord } from "@/lib/types";
+import type { MagnetRecord, RawMagnetLinkData } from "@/lib/types";
 import { handleExportMagnets } from "@/lib/stash-exporter";
+import "@/lib/console";
 
 export default defineBackground(() => {
-  console.log("background is running");
   browser.runtime.onMessage.addListener(
     async (request, sender, sendResponse) => {
       try {
@@ -27,16 +27,10 @@ export default defineBackground(() => {
   );
 });
 
-async function handleNewMagnetLinks(
-  newMagnetLinks: MagnetRecord[]
-): Promise<{ addedCount: number; totalCount: number }> {
-  const existingLinks: MagnetRecord[] =
-    (await storage.getItem("local:magneto-stash")) || [];
+async function handleNewMagnetLinks(newMagnetLinks: RawMagnetLinkData[]): Promise<{ addedCount: number; totalCount: number }> {
+  const existingLinks: MagnetRecord[] = await storage.getItem("local:magneto-stash") || [];
 
-  const newLinks = newMagnetLinks.filter(
-    (link) =>
-      !existingLinks.some((existing) => existing.magnetLink === link.magnetLink)
-  );
+  const newLinks = newMagnetLinks.filter((link) => !existingLinks.some((existing) => existing.magnetLink === link.magnetLink));
 
   if (newLinks.length === 0)
     return { addedCount: 0, totalCount: existingLinks.length };

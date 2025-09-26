@@ -2,6 +2,7 @@
 import { MagnetRecord, RawMagnetLinkData } from '@/lib/types';
 import { parseTorrentName } from '@/lib/utils';
 import { sourceAdapters } from '@/lib/adapters';
+import "@/lib/console";
 
 export default defineContentScript({
   matches: ['https://*/*', 'http://*/*'],
@@ -14,17 +15,19 @@ export default defineContentScript({
 let observer: MutationObserver | null = null;
 
 async function initializeExtractor(): Promise<void> {
-  console.log('MagnetExtractor initializing');
+  console.log('Initializing extractor...');
   
   setupMessageHandler();
   
-  const isCollecting = await storage.getItem<boolean>('sync:isCollecting');
-  if (isCollecting) {
-    startCollection();
-  }
+  const isCollecting = await storage.getItem<boolean>('sync:magneto-isCollecting');
+  
+  if (isCollecting) startCollection();
+
+  console.log('Extractor initialized');
 }
 
 function setupMessageHandler(): void {
+  console.log('Setting up message handler...');
   browser.runtime.onMessage.addListener(async (message) => {
     switch (message.type) {
       case 'TOGGLE_COLLECTION':
@@ -35,31 +38,45 @@ function setupMessageHandler(): void {
         return { success: false, error: 'Unknown message type' };
     }
   });
+  console.log('Message handler set up');
 }
 
 async function handleToggle(isCollecting: boolean): Promise<{ success: boolean }> {
   if (isCollecting) {
     startCollection();
+    console.log('Collection started');
   } else {
     stopCollection();
+    console.log('Collection stopped');
   }
   return { success: true };
 }
 
 async function handleManualCollection(): Promise<{ success: boolean; error?: string }> {
+  console.log('Handling manual collection...');
   const isWhitelisted = await checkWhitelist();
-  if (!isWhitelisted) return { success: false, error: 'Host not whitelisted' };
-  
+
+  if (!isWhitelisted) {
+    console.log('Host not whitelisted');
+    return { success: false, error: 'Host not whitelisted' };
+  }
+
+  console.log('Manual collection triggered');
   extractAndSend();
+  console.log('Manual collection completed');
   return { success: true };
 }
 
 function startCollection(): void {
   if (observer) return;
+
   
   observer = new MutationObserver(() => {
     if (document.querySelector('a[href^="magnet:"]')) {
+      console.log('Magnet link found');
+      console.log('Extracting and sending magnet links...');
       extractAndSend();
+      console.log('Extraction and sending completed');
     }
   });
   
@@ -73,10 +90,12 @@ function stopCollection(): void {
 }
 
 async function extractAndSend(): Promise<void> {
+  console.log('Extracting and sending magnet links...');
   const [isCollecting, isWhitelisted] = await Promise.all([
-    storage.getItem<boolean>('sync:isCollecting'),
+    storage.getItem<boolean>('sync:magneto-isCollecting'),
     checkWhitelist(),
   ]);
+  console.log(`isCollecting: ${isCollecting}, isWhitelisted: ${isWhitelisted}`);
   
   if (!isCollecting || !isWhitelisted) return;
   
@@ -102,8 +121,8 @@ function extractMagnetLinks(): MagnetRecord[] {
   const rawLinks = adapter 
     ? adapter(document, location)
     : getDefaultMagnetLinks();
-  
-  return deduplicateAndProcess(rawLinks, hostname);
+
+  return deduplicateAndPreprocess(rawLinks, hostname);
 }
 
 function getDefaultMagnetLinks(): RawMagnetLinkData[] {
@@ -115,7 +134,7 @@ function getDefaultMagnetLinks(): RawMagnetLinkData[] {
   }));
 }
 
-function deduplicateAndProcess(
+function deduplicateAndPreprocess(
   rawLinks: RawMagnetLinkData[], 
   hostname: string
 ): MagnetRecord[] {
@@ -141,7 +160,7 @@ function enhanceMagnetLink(magnetLink: string, name?: string): string {
 }
 
 async function checkWhitelist(): Promise<boolean> {
-  const whitelistedHosts = await storage.getItem<string[]>('sync:whitelistedHosts') || [];
+  const whitelistedHosts = await storage.getItem<string[]>('sync:magneto-whitelistedHosts') || [];
   return Array.isArray(whitelistedHosts) && 
          whitelistedHosts.includes(window.location.hostname);
 }
