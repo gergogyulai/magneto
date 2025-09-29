@@ -64,7 +64,9 @@
 
     try {
       whitelistedHosts.current = [...whitelistedHosts.current!, currentTab.hostname];
-      manualCollect();
+      if (collectionEnabled.current) {
+        manualCollect();
+      }
     } catch (error) {
       console.error("Failed to add host:", error);
     }
