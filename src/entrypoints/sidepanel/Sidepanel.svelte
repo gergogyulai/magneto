@@ -1,45 +1,39 @@
 <script lang="ts">
   import type { MagnetRecord } from "@/lib/types";
-
   import {
     Card,
-    CardAction,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
+    CardDescription,
   } from "@/lib/components/ui/card";
   import { Input } from "@/lib/components/ui/input";
   import { Separator } from "@/lib/components/ui/separator";
-  import { Popover } from "@/lib/components/ui/popover";
-  import { Command } from "@/lib/components/ui/command";
-
   import { Button } from "@/lib/components/ui/button";
-  import { Magnet, Link, Trash2 } from "@lucide/svelte";
+  import { Badge } from "@/lib/components/ui/badge";
+  import { Magnet, Search, Link, Trash2, Settings, Download, Globe } from "@lucide/svelte";
   import ExportDropdown from "@/lib/components/export-dropdown.svelte";
   import MagnetList from "@/lib/components/magnet-list.svelte";
   import { Toaster } from "@/lib/components/ui/sonner";
-  import { createStorageState } from "@/lib/reactive-localstorage.svelte";
+  import { ReactiveStorage } from "@/lib/reactive-storage.svelte";
   import GlobalLayout from "@/lib/components/global-layout.svelte";
+  import { STORAGE_KEYS } from "@/lib/constants";
+  import { currentTab } from "@/lib/current-host.svelte";
 
-  const getCurrentHost = () => {
-    return window.location.hostname;
-  };
-
-  const magnetStash = createStorageState<MagnetRecord[]>(
-    "local:magneto-stash",
+  const magnetStash = new ReactiveStorage<MagnetRecord[]>(
+    STORAGE_KEYS.STASH,
     []
   );
+  let currentHost = $derived<string | null>(currentTab.hostname);
 
-  console.log(magnetStash.value)
+  console.log(magnetStash.current);
 
   let searchTerm = $state<string>("");
 
   let filteredMagnetLinks = $derived<MagnetRecord[]>(
     !searchTerm.trim()
-      ? magnetStash.value
-      : magnetStash.value.filter((link: MagnetRecord) =>
+      ? magnetStash.current!
+      : magnetStash.current!.filter((link: MagnetRecord) =>
           (link.name || "")
             .toLowerCase()
             .includes(searchTerm.toLowerCase().trim())
@@ -49,23 +43,28 @@
   let collectedMagnetLinks = $derived<number>(filteredMagnetLinks.length);
   let collectedMagnetLinksThisSite = $derived<number>(
     filteredMagnetLinks.filter(
-      (link: MagnetRecord) => link.source === getCurrentHost()
+      (link: MagnetRecord) => link.source === currentHost
     ).length
   );
-  let currentHost = $derived<string | null>(getCurrentHost() || null);
 
-  let totalMagnetLinks = $derived<number>(magnetStash.value.length);
+  let totalMagnetLinks = $derived<number>(magnetStash.current!.length);
   let totalMagnetLinksThisSite = $derived<number>(
-    magnetStash.value.filter(
-      (link: MagnetRecord) => link.source === getCurrentHost()
+    magnetStash.current!.filter(
+      (link: MagnetRecord) => link.source === currentHost
     ).length
   );
+
+  function handleDeleteMagnet(linkToDelete: MagnetRecord) {
+    magnetStash.current! = magnetStash.current!.filter(
+      (link) => link.magnetLink !== linkToDelete.magnetLink
+    );
+  }
 
   let filteringSourceOptions = $derived<
     Array<{ label: string; value: string | null }>
   >(
-    magnetStash.value
-      .map((link: MagnetRecord) => link.source || "Unknown Source")
+    magnetStash
+      .current!.map((link: MagnetRecord) => link.source || "Unknown Source")
       .filter((value, index, self) => self.indexOf(value) === index)
       .map((source) => ({
         label: source === "Unknown Source" ? source : new URL(source).hostname,
@@ -75,168 +74,142 @@
       .concat([{ label: "All Sources", value: "" }])
   );
   let filteringSelectedSourceOption = $state<string | null>("");
-
-  let isLoading = $derived(!magnetStash.initialized);
-  let isSearching = $derived(searchTerm.trim().length > 0);
 </script>
 
 <GlobalLayout>
   <Toaster />
-  <div class="select-none">
-    <Card class="min-w-80 rounded-none">
-      <CardHeader class="pb-3">
-        <div class="flex items-center justify-between">
-          <CardTitle class="flex items-center gap-2">
-            <Magnet class="w-5 h-5 text-primary" />Magneto
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent class="flex flex-col gap-6">
-        <div class="grid gap-4">
-          <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-2 text-muted-foreground">
-              <Link class="w-4 h-4" />
-              <span class="text-sm font-medium">Total Magnets</span>
+  <div class="flex flex-col h-screen bg-background">
+    <!-- Header Section -->
+    <div class="flex-none border-b bg-card">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <Magnet class="h-5 w-5" />
             </div>
-            <div class="text-2xl font-bold">{collectedMagnetLinks}</div>
-            {#if currentHost}
-              <span class="text-sm text-muted-foreground">
-                {collectedMagnetLinksThisSite} from {currentHost}
-              </span>
-            {/if}
-
-            <div class="flex gap-2 mt-2">
-              <ExportDropdown />
-              <Button
-                variant="outline"
-                size="lg"
-                class="flex-1 text-destructive hover:text-destructive"
-                disabled={collectedMagnetLinks === 0}
-                onclick={() => {
-                  if (
-                    confirm("Are you sure you want to delete all magnet links?")
-                  ) {
-                    storage.removeItem("local:magnetLinks");
-                  }
-                }}
-              >
-                <Trash2 class="w-4 h-4 mr-2" />
-                Delete All
-              </Button>
+            <div>
+              <h1 class="text-xl font-semibold tracking-tight">Magneto</h1>
+              <p class="text-sm text-muted-foreground">Magnet link collector</p>
             </div>
           </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onclick={() => browser.runtime.openOptionsPage()}
+            class="h-9 w-9"
+          >
+            <Settings class="w-4 h-4" />
+            <span class="sr-only">Open settings</span>
+          </Button>
         </div>
 
-        <Separator />
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-2 gap-3">
+          <Card class="p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <Link class="w-4 h-4 text-primary" />
+              <span class="text-sm font-medium">Total</span>
+            </div>
+            <div class="text-2xl font-bold">{collectedMagnetLinks}</div>
+            <p class="text-xs text-muted-foreground mt-1">Magnet links</p>
+          </Card>
+          
+          <Card class="p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <Globe class="w-4 h-4 text-primary" />
+              <span class="text-sm font-medium">Current Site</span>
+            </div>
+            <div class="text-2xl font-bold">{collectedMagnetLinksThisSite}</div>
+            {#if currentHost}
+              <p class="text-xs text-muted-foreground mt-1 truncate" title={currentHost}>
+                {currentHost}
+              </p>
+            {:else}
+              <p class="text-xs text-muted-foreground mt-1">No active site</p>
+            {/if}
+          </Card>
+        </div>
 
-        <section aria-labelledby="magnet-list-controls">
-          <h2 id="magnet-list-controls" class="sr-only">
-            Magnet Link Controls
-          </h2>
-          <Input
-            type="text"
-            placeholder="Search magnet links..."
-            bind:value={searchTerm}
-            class="mb-3"
-            aria-label="Search magnet links"
-          />
+        <!-- Action Buttons -->
+        <div class="flex gap-2 mt-4">
+          <ExportDropdown />
+          <Button
+            variant="outline"
+            size="sm"
+            class="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+            disabled={collectedMagnetLinks === 0}
+            onclick={() => {
+              if (confirm("Are you sure you want to delete all magnet links?")) {
+                magnetStash.current! = [];
+              }
+            }}
+          >
+            <Trash2 class="w-4 h-4 mr-2" />
+            Clear All
+          </Button>
+        </div>
+      </div>
+    </div>
 
-          <!-- <div class="flex gap-2 mb-4 flex-wrap">
-            <Popover.Root bind:open={openSourcePopover}>
-              <Popover.Trigger let:builder>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openSourcePopover}
-                  class="w-[150px] justify-between"
-                  {...builder}
-                >
-                  {selectedSourceFilter
-                    ? sourceOptions.find((src) => src.value === selectedSourceFilter)?.label
-                    : 'Filter Source'}
-                  <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </Popover.Trigger>
-              <Popover.Content class="w-[200px] p-0">
-                <Command.Root>
-                  <Command.Input placeholder="Search sources..." />
-                  <Command.Empty>No source found.</Command.Empty>
-                  <Command.Group>
-                    <Command.List>
-                      {#each sourceOptions as src}
-                        <Command.Item
-                          value={src.label}
-                          onSelect={() => {
-                            selectedSourceFilter = src.value
-                            openSourcePopover = false
-                          }}
-                        >
-                          <Check
-                            class={cn(
-                              'mr-2 h-4 w-4',
-                              selectedSourceFilter === src.value ? 'opacity-100' : 'opacity-0',
-                            )}
-                          />
-                          {src.label}
-                        </Command.Item>
-                      {/each}
-                    </Command.List>
-                  </Command.Group>
-                </Command.Root>
-              </Popover.Content>
-            </Popover.Root>
+    <!-- Search Section -->
+    <div class="flex-none p-4 border-b bg-muted/30">
+      <div class="relative">
+        <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Search magnet links..."
+          bind:value={searchTerm}
+          class="pl-10"
+          aria-label="Search magnet links"
+        />
+      </div>
+      {#if searchTerm.trim()}
+        <div class="flex items-center gap-2 mt-2">
+          <Badge variant="secondary" class="text-xs">
+            {collectedMagnetLinks} results
+          </Badge>
+          <Button
+            variant="ghost"
+            size="sm"
+            onclick={() => (searchTerm = "")}
+            class="h-6 px-2 text-xs"
+          >
+            Clear
+          </Button>
+        </div>
+      {/if}
+    </div>
 
-            <Popover.Root bind:open={openOrderPopover}>
-              <Popover.Trigger let:builder>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openOrderPopover}
-                  class="w-[180px] justify-between"
-                  {...builder}
-                >
-                  {selectedOrder
-                    ? orderOptions.find((order) => order.value === selectedOrder)?.label
-                    : 'Order By Date'}
-                  <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </Popover.Trigger>
-              <Popover.Content class="w-[200px] p-0">
-                <Command.Root>
-                  <Command.Group>
-                    <Command.List>
-                      {#each orderOptions as order}
-                        <Command.Item
-                          value={order.label}
-                          onSelect={() => {
-                            selectedOrder = order.value
-                            openOrderPopover = false
-                          }}
-                        >
-                          <Check
-                            class={cn(
-                              'mr-2 h-4 w-4',
-                              selectedOrder === order.value ? 'opacity-100' : 'opacity-0',
-                            )}
-                          />
-                          {order.label}
-                        </Command.Item>
-                      {/each}
-                    </Command.List>
-                  </Command.Group>
-                </Command.Root>
-              </Popover.Content>
-            </Popover.Root>
-          </div> -->
-        </section>
-
-        <section aria-labelledby="magnet-links-heading">
-          <h2 id="magnet-links-heading" class="sr-only">
-            Collected Magnet Links
-          </h2>
-          <MagnetList magnetLinks={filteredMagnetLinks} />
-        </section>
-      </CardContent>
-    </Card>
+    <!-- Content Section -->
+    <div class="flex-1 overflow-hidden">
+      <div class="h-full overflow-y-auto">
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-medium">
+              {#if searchTerm.trim()}
+                Search Results
+              {:else}
+                Your Magnet Collection
+              {/if}
+            </h2>
+            {#if collectedMagnetLinks > 0 && !searchTerm.trim()}
+              <Badge variant="outline" class="text-xs">
+                {totalMagnetLinks} total
+              </Badge>
+            {/if}
+          </div>
+          
+          <section aria-labelledby="magnet-links-heading">
+            <h3 id="magnet-links-heading" class="sr-only">
+              Collected Magnet Links
+            </h3>
+            <MagnetList
+              magnetLinks={filteredMagnetLinks}
+              onDelete={handleDeleteMagnet}
+            />
+          </section>
+        </div>
+      </div>
+    </div>
   </div>
 </GlobalLayout>
