@@ -56,6 +56,9 @@ export function createStorageState<T>(key: StorageKey, defaultValue: T) {
         isUpdatingFromStorage = true;
         state.value = stored as T;
         isUpdatingFromStorage = false;
+      } else {
+        // If key doesn't exist, initialize it with the default value
+        await storage.setItem(key, defaultValue);
       }
       state.initialized = true;
 

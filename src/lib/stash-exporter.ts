@@ -1,4 +1,5 @@
 import type { MagnetRecord } from "@/lib/types";
+import { STORAGE_KEYS } from "@/lib/constants";
 
 interface ExportResult {
   success: boolean;
@@ -8,7 +9,7 @@ interface ExportResult {
 
 export async function handleExportMagnets(format: string): Promise<ExportResult> {
   try {
-    const magnetLinks: MagnetRecord[] = await storage.getItem("local:magnetLinks") || [];
+    const magnetLinks: MagnetRecord[] = await storage.getItem(STORAGE_KEYS.STASH) || [];
     
     if (!magnetLinks.length) return { success: false, error: "No magnet links found to export" };
 

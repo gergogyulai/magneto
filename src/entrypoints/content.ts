@@ -1,147 +1,121 @@
-// content-scripts/magnet-extractor.content.ts
-import { MagnetRecord, RawMagnetLinkData } from '@/lib/types';
-import { parseTorrentName } from '@/lib/utils';
-import { sourceAdapters } from '@/lib/adapters';
+import type {
+  MagnetRecord,
+  RawMagnetLinkData,
+  SourceAdapter,
+  CollectionMode,
+} from "@/lib/types.new";
+import { getAdapter } from "@/lib/adapters";
+import { STORAGE_KEYS } from "@/lib/constants";
+import { initialize } from "wxt";
 
 export default defineContentScript({
-  matches: ['https://*/*', 'http://*/*'],
-  runAt: 'document_end',
+  matches: ["https://*/*", "http://*/*"],
+  runAt: "document_end",
   matchAboutBlank: false,
-  registration: 'manifest',
-  main: initializeExtractor,
+  registration: "manifest",
+  main: () => {
+    browser.runtime.onMessage.addListener(async (message, sender) => {
+      try {
+        switch (message.type) {
+          case "TOGGLE_COLLECTION":
+            return await handleToggle();
+          case "COLLECT_MAGNETS":
+            return await handleManualCollection();
+          default:
+            return { success: false, error: "Unknown message type" };
+        }
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    storage
+      .getItem<boolean>(STORAGE_KEYS.COLLECTION_ENABLED)
+      .then((isCollecting) => {
+        if (isCollecting) {
+          startWatching();
+        }
+      });
+
+    storage.watch<boolean>(STORAGE_KEYS.COLLECTION_ENABLED, (newValue) => {
+      if (newValue) {
+        startWatching();
+      } else {
+        stopWatching();
+      }
+    });
+  },
 });
+
+async function handleToggle(): Promise<{ success: boolean }> {
+  const current =
+    (await storage.getItem<boolean>(STORAGE_KEYS.COLLECTION_ENABLED)) || false;
+  const newValue = !current;
+  await storage.setItem(STORAGE_KEYS.COLLECTION_ENABLED, newValue);
+  newValue ? await startWatching() : await stopWatching();
+  return { success: true };
+}
+
+async function handleManualCollection(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  const whitelist =
+    (await storage.getItem<string[]>(STORAGE_KEYS.WHITELISTED_HOSTS)) || [];
+
+  if (!whitelist.includes(location.hostname)) {
+    return { success: false, error: "Host not in whitelist" };
+  }
+
+  const rawData = extractMagnetData(document, location);
+  await saveMagnets(rawData);
+
+  return { success: true };
+}
 
 let observer: MutationObserver | null = null;
 
-async function initializeExtractor(): Promise<void> {
-  console.log('MagnetExtractor initializing');
-  
-  setupMessageHandler();
-  
-  const isCollecting = await storage.getItem<boolean>('sync:isCollecting');
-  if (isCollecting) {
-    startCollection();
-  }
-}
+async function startWatching(): Promise<void> {
+  const whitelist =
+    (await storage.getItem<string[]>(STORAGE_KEYS.WHITELISTED_HOSTS)) || [];
 
-function setupMessageHandler(): void {
-  browser.runtime.onMessage.addListener(async (message) => {
-    switch (message.type) {
-      case 'TOGGLE_COLLECTION':
-        return handleToggle(message.isCollecting);
-      case 'COLLECT_MAGNETS':
-        return handleManualCollection();
-      default:
-        return { success: false, error: 'Unknown message type' };
-    }
-  });
-}
-
-async function handleToggle(isCollecting: boolean): Promise<{ success: boolean }> {
-  if (isCollecting) {
-    startCollection();
-  } else {
-    stopCollection();
-  }
-  return { success: true };
-}
-
-async function handleManualCollection(): Promise<{ success: boolean; error?: string }> {
-  const isWhitelisted = await checkWhitelist();
-  if (!isWhitelisted) return { success: false, error: 'Host not whitelisted' };
-  
-  extractAndSend();
-  return { success: true };
-}
-
-function startCollection(): void {
+  if (!whitelist.includes(location.hostname)) return;
   if (observer) return;
-  
+
   observer = new MutationObserver(() => {
-    if (document.querySelector('a[href^="magnet:"]')) {
-      extractAndSend();
-    }
+    const rawData = extractMagnetData(document, location);
+    saveMagnets(rawData);
   });
-  
+
   observer.observe(document.body, { childList: true, subtree: true });
-  extractAndSend();
+
+  const rawData = extractMagnetData(document, location);
+  saveMagnets(rawData);
 }
 
-function stopCollection(): void {
-  observer?.disconnect();
-  observer = null;
-}
-
-async function extractAndSend(): Promise<void> {
-  const [isCollecting, isWhitelisted] = await Promise.all([
-    storage.getItem<boolean>('sync:isCollecting'),
-    checkWhitelist(),
-  ]);
-  
-  if (!isCollecting || !isWhitelisted) return;
-  
-  const magnetLinks = extractMagnetLinks();
-  if (magnetLinks.length === 0) return;
-  
-  console.log(`Found ${magnetLinks.length} magnet links`);
-  
-  try {
-    await browser.runtime.sendMessage({
-      type: 'MAGNET_LINKS',
-      magnetLinks,
-    });
-  } catch (error) {
-    console.error('Failed to send magnet links:', error);
+function stopWatching(): void {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
   }
 }
 
-function extractMagnetLinks(): MagnetRecord[] {
-  const hostname = window.location.hostname;
-  const adapter = sourceAdapters[hostname];
-  
-  const rawLinks = adapter 
-    ? adapter(document, location)
-    : getDefaultMagnetLinks();
-  
-  return deduplicateAndProcess(rawLinks, hostname);
+/**
+ * ---- Adapter Extraction ----
+ */
+function extractMagnetData(
+  document: Document,
+  location: Location
+): RawMagnetLinkData[] {
+  const adapter = getAdapter(location.hostname);
+  return adapter(document, location);
 }
 
-function getDefaultMagnetLinks(): RawMagnetLinkData[] {
-  const links = document.querySelectorAll<HTMLAnchorElement>('a[href^="magnet:"]');
-  
-  return Array.from(links, link => ({
-    magnetLink: link.href,
-    name: parseTorrentName(link.href) ?? '',
-  }));
-}
-
-function deduplicateAndProcess(
-  rawLinks: RawMagnetLinkData[], 
-  hostname: string
-): MagnetRecord[] {
-  const seen = new Set<string>();
-  const currentDate = new Date().toISOString();
-  
-  return rawLinks
-    .filter(({ magnetLink }) => magnetLink && !seen.has(magnetLink) && seen.add(magnetLink))
-    .map(({ magnetLink, name }) => ({
-      magnetLink: enhanceMagnetLink(magnetLink, name),
-      name: name || parseTorrentName(magnetLink),
-      date: currentDate,
-      source: hostname,
-    }));
-}
-
-function enhanceMagnetLink(magnetLink: string, name?: string): string {
-  if (!name || magnetLink.includes('dn=')) {
-    return magnetLink;
-  }
-  
-  return `${magnetLink}&dn=${encodeURIComponent(name)}`;
-}
-
-async function checkWhitelist(): Promise<boolean> {
-  const whitelistedHosts = await storage.getItem<string[]>('sync:whitelistedHosts') || [];
-  return Array.isArray(whitelistedHosts) && 
-         whitelistedHosts.includes(window.location.hostname);
+async function saveMagnets(
+  rawMagnetLinkData: RawMagnetLinkData[]
+): Promise<void> {
+  await browser.runtime.sendMessage({
+    type: "MAGNET_LINKS",
+    payload: rawMagnetLinkData,
+  });
 }

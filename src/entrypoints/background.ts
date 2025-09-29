@@ -1,49 +1,69 @@
-// background.ts
-import type { MagnetRecord } from "@/lib/types";
+import { CollectionMode, MagnetRecord, StoredMagnets, type RawMagnetLinkData } from "@/lib/types.new";
 import { handleExportMagnets } from "@/lib/stash-exporter";
+import { STORAGE_KEYS } from "@/lib/constants";
+import { initializeStorage } from "@/lib/init";
+import { normalizeMagnetData } from "@/lib/normalizer";
+
+type MessageResponse = { success: boolean; error?: string } & Record<
+  string,
+  any
+>;
 
 export default defineBackground(() => {
-  console.log("background is running");
-  browser.runtime.onMessage.addListener(
-    async (request, sender, sendResponse) => {
-      try {
-        if (request.type === "MAGNET_LINKS") {
-          console.log("Received magnet links:", request?.magnetLinks);
-
-          const result = await handleNewMagnetLinks(request?.magnetLinks);
-          return { success: true, ...result };
-        }
-
-        if (request.type === "EXPORT_MAGNETS") {
-          console.log("Exporting magnets in format:", request.format);
-          const result = await handleExportMagnets(request.format);
-          return result;
-        }
-      } catch (error) {
-        console.error("Error handling message:", error);
-        return { success: false, error: (error as Error).message };
-      }
-    }
-  );
+  browser.runtime.onInstalled.addListener(initializeStorage);
+  browser.runtime.onMessage.addListener(handleMessage);
 });
 
-async function handleNewMagnetLinks(
-  newMagnetLinks: MagnetRecord[]
-): Promise<{ addedCount: number; totalCount: number }> {
-  const existingLinks: MagnetRecord[] =
-    (await storage.getItem("local:magneto-stash")) || [];
+async function handleMessage(request: any): Promise<MessageResponse> {
+  try {
+    switch (request.type) {
+      case "MAGNET_LINKS":
+        return await handleMagnetLinks(request.magnetLinks);
+      case "EXPORT_MAGNETS":
+        return await handleExportMagnets(request.format);
+      default:
+        return { success: false, error: "Unknown message type" };
+    }
+  } catch (error) {
+    console.error("Error handling message:", error);
+    return { success: false, error: (error as Error).message };
+  }
+}
 
-  const newLinks = newMagnetLinks.filter(
-    (link) =>
-      !existingLinks.some((existing) => existing.magnetLink === link.magnetLink)
+async function handleMagnetLinks(newMagnetLinks: RawMagnetLinkData[]): Promise<MessageResponse> {
+  if (!Array.isArray(newMagnetLinks) || newMagnetLinks.length === 0) return { success: false, error: "No magnet links" };
+
+  const normalizedLinks = newMagnetLinks.map((raw) => normalizeMagnetData(raw, { mode: CollectionMode.Full })
   );
 
-  if (newLinks.length === 0)
-    return { addedCount: 0, totalCount: existingLinks.length };
+  const deduplicatedLinks = Array.from(
+    new Map(normalizedLinks.map((link) => [link.infoHash, link])).values()
+  );
 
-  const updatedLinks = [...existingLinks, ...newLinks];
-  await storage.setItem("local:magneto-stash", updatedLinks);
+  const existingLinks = (await storage.getItem<StoredMagnets>(STORAGE_KEYS.STASH)) || [];
+  const existingInfoHashes = new Set(existingLinks.map((link) => link.infoHash));
+  const uniqueNewLinks = deduplicatedLinks.filter((link) => !existingInfoHashes.has(link.infoHash));
+  
+  // Todo: consider merging updates to existing links
+  
+  if (uniqueNewLinks.length === 0) {
+    return { success: true, message: "No new unique magnet links to add" };
+  }
 
+  const updatedStash = [...existingLinks, ...uniqueNewLinks];
+  await storage.setItem(STORAGE_KEYS.STASH, updatedStash);
+  
+  await broadcastUpdate(updatedStash, uniqueNewLinks);
+
+  return {
+    success: true,
+  };
+}
+
+async function broadcastUpdate(
+  updatedLinks: MagnetRecord[],
+  newLinks: MagnetRecord[]
+): Promise<void> {
   const message = {
     type: "MAGNET_LINKS_UPDATED",
     count: updatedLinks.length,
@@ -53,10 +73,7 @@ async function handleNewMagnetLinks(
 
   try {
     await browser.runtime.sendMessage(message);
-  } catch {}
-
-  return {
-    addedCount: newLinks.length,
-    totalCount: updatedLinks.length,
-  };
+  } catch (error) {
+    console.debug("Could not broadcast update - UI likely closed");
+  }
 }

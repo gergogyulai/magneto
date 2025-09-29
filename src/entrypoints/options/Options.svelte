@@ -20,33 +20,14 @@
   } from "@lucide/svelte";
   import GlobalLayout from "@/lib/components/global-layout.svelte";
   import { setMode, mode } from "mode-watcher";
-  import { createStorageState } from "@/lib/reactive-localstorage.svelte";
+  import { ReactiveStorage } from "@/lib/reactive-storage.svelte";
   import Input from "@/lib/components/ui/input/input.svelte";
+  import { STORAGE_KEYS, DEFAULT_OPTIONS } from "@/lib/constants";
+  import type { MagnetRecord, ExportFormats, MagnetoOptions } from "@/lib/types.new";
+  
+  let magnetStash = new ReactiveStorage<MagnetRecord[]>(STORAGE_KEYS.STASH, []);
+  let optionsStore = new ReactiveStorage<MagnetoOptions>(STORAGE_KEYS.OPTIONS, DEFAULT_OPTIONS);
 
-  let minimalCollectionModeState = createStorageState<boolean>(
-    "sync:magneto-minimalCollectionMode",
-    false
-  );
-
-  let collectTorrentNamesState = createStorageState<boolean>(
-    "sync:magneto-collectTorrentNames",
-    false
-  );
-
-  let rollingCollectionState = createStorageState<number>(
-    "sync:magneto-rollingCollection",
-    0
-  );
-
-  let adaptersState = createStorageState<{
-    extTo: boolean;
-    waybackMachine: boolean;
-  }>("sync:magneto-adapters", {
-    extTo: true,
-    waybackMachine: true,
-  });
-
-  // Use mode-watcher's mode store instead
   let themeLabel = $derived(
     mode.current === "light"
       ? "Light"
@@ -61,15 +42,15 @@
     { value: "system", label: "Auto" },
   ];
 
-  async function exportFullStash(exportFormat: "json" | "csv" = "json") {
+  async function exportFullStash(exportFormat: ExportFormats): Promise<void> {
     browser.runtime.sendMessage({
       type: "EXPORT_MAGNETS",
       format: exportFormat,
     });
   }
 
-  async function emptyFullStash() {
-    await storage.removeItem("local:magnetLinks");
+  async function emptyFullStash(): Promise<void> {
+    magnetStash.current = [];
   }
 
   function handleThemeChange(newMode: string) {
@@ -170,10 +151,10 @@
               Only collect torrent info hashes
             </p>
           </div>
-          <Switch id="minimal-mode" bind:checked={minimalCollectionModeState.value} />
+          <Switch id="minimal-mode" bind:checked={optionsStore.current!.minimalCollectionMode.enabled} />
         </div>
 
-        {#if minimalCollectionModeState.value}
+        {#if optionsStore.current!.minimalCollectionMode.enabled}
           <div class="pl-4 border-l-2 border-muted">
             <div class="flex items-center justify-between">
               <div class="space-y-1">
@@ -182,20 +163,34 @@
                   Also collect torrent names in addition to info hashes
                 </p>
               </div>
-              <Switch id="collect-names" bind:checked={collectTorrentNamesState.value} />
+              <Switch id="collect-names" bind:checked={optionsStore.current!.minimalCollectionMode.collectNames} />
             </div>
           </div>
         {/if}
 
         <div class="flex items-center justify-between">
           <div class="space-y-1">
-            <Label for="rolling-collection">Rolling collection</Label>
+            <Label for="rolling-collection-enabled">Rolling Collection</Label>
             <p class="text-sm text-muted-foreground">
-              Discard old entries past limit (0 for unlimited)
+              Start siscarding old entries past a limit
             </p>
           </div>
-          <Input type="number" class="w-26 ml-2" id="rolling-collection" bind:value={rollingCollectionState.value} />
+          <Switch id="rolling-collection-enabled" bind:checked={optionsStore.current!.rollingCollection.enabled} />
         </div>
+
+        {#if optionsStore.current!.rollingCollection.enabled}
+          <div class="pl-4 border-l-2 border-muted">
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <Label for="rolling-collection-limit">Rolling Collection Limit</Label>
+                <p class="text-sm text-muted-foreground">
+                  Maximum number of entries to keep in the stash
+                </p>
+              </div>
+              <Input type="number" id="rolling-collection-limit" class="w-32" bind:value={optionsStore.current!.rollingCollection.limit} />
+            </div>
+          </div>
+        {/if}
       </CardContent>
     </Card>
 
@@ -217,22 +212,19 @@
           </div>
           <Switch
             id="ext-to-adapter"
-            bind:checked={adaptersState.value.extTo}
+            bind:checked={optionsStore.current!.adapters["ext.to"]}
             />
         </div>
-
-        <Separator />
-
         <div class="flex items-center justify-between">
           <div class="space-y-1">
-            <Label for="wayback-adapter">Wayback Machine</Label>
+            <Label for="wayback-adapter">Knaben</Label>
             <p class="text-sm text-muted-foreground">
-              Enable enhanced data collection for web.archive.org
+              Enable enhanced data collection for knaben.org
             </p>
           </div>
           <Switch
             id="wayback-adapter"
-            bind:checked={adaptersState.value.waybackMachine}
+            bind:checked={optionsStore.current!.adapters["knaben.org"]}
             />
         </div>
       </CardContent>
