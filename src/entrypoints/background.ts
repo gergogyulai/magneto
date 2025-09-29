@@ -21,6 +21,8 @@ async function handleMessage(request: any): Promise<MessageResponse> {
         return await handleMagnetLinks(request.magnetLinks);
       case "EXPORT_MAGNETS":
         return await handleExportMagnets(request.format);
+      case "TOGGLE_COLLECTION":
+        return { success: true, message: "Collection toggle message received" };
       default:
         return { success: false, error: "Unknown message type" };
     }

@@ -35,9 +35,9 @@
   let collectionEnabled = new ReactiveStorage<boolean>(STORAGE_KEYS.COLLECTION_ENABLED, true);
 
   $effect(() => {
-    if (collectionEnabled.current && collectionEnabled.current && currentTab.tabId) {
-      browser.runtime.sendMessage({
-        type: "COLLECT_MAGNETS",
+    if (currentTab.tabId) {
+      browser.tabs.sendMessage(currentTab.tabId, {
+        type: "TOGGLE_COLLECTION",
       }).catch(error => {
         console.error("Error triggering collection:", error);
       });
@@ -64,6 +64,7 @@
 
     try {
       whitelistedHosts.current = [...whitelistedHosts.current!, currentTab.hostname];
+      manualCollect();
     } catch (error) {
       console.error("Failed to add host:", error);
     }
@@ -91,6 +92,20 @@
       window.close();
     } catch (error) {
       console.error("Error opening side panel:", error);
+    }
+  }
+
+  async function manualCollect() {
+    if (!currentTab.tabId) {
+      console.error("Tab ID is not available.");
+      return;
+    }
+    try {
+      await browser.tabs.sendMessage(currentTab.tabId, {
+        type: "COLLECT_MAGNETS",
+      });
+    } catch (error) {
+      console.error("Error triggering manual collection:", error);
     }
   }
 </script>
@@ -152,10 +167,16 @@
         </div>
 
         <!-- Main Action Button -->
-        <Button onclick={openSidePanel} class="w-full">
-          <ExternalLink class="h-4 w-4 mr-2" />
-          Open Magnet Explorer
-        </Button>
+        <div class="grid grid-cols-2 gap-2">
+          <Button onclick={openSidePanel} class="flex-1">
+            <ExternalLink class="h-4 w-4 mr-2" />
+            Open Explorer
+          </Button>
+          <Button onclick={manualCollect} variant="outline" class="flex-1">
+            <Activity class="h-4 w-4 mr-2" />
+            Collect Now
+          </Button>
+        </div>
       </div>
 
       <!-- Current Site Management -->
