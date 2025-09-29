@@ -78,7 +78,11 @@
     }
   }
 
+  function openSidePanel() {
+    if (!browser.sidePanel) {
+      console.error("SidePanel API is not available.");
       return;
+    }
     if (typeof currentTab.tabId !== "number") {
       console.error("Tab ID is not available.");
       return;
