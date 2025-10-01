@@ -3,7 +3,7 @@ import type {
   RawMagnetLinkData,
   SourceAdapter,
   CollectionMode,
-} from "@/lib/types.new";
+} from "@/lib/types";
 import { getAdapter } from "@/lib/adapters";
 import { STORAGE_KEYS } from "@/lib/constants";
 

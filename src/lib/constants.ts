@@ -1,4 +1,4 @@
-import type { StorageKey, MagnetoOptions } from "@/lib/types.new";
+import type { StorageKey, MagnetoOptions } from "@/lib/types";
 
 export const STORAGE_KEYS = {
   STASH: "local:magneto-stash",

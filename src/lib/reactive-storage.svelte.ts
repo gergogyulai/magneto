@@ -1,6 +1,6 @@
 import { tick } from 'svelte';
 import { browser } from 'wxt/browser';
-import type { StorageKey } from '@/lib/types.new';
+import type { StorageKey } from '@/lib/types';
 
 export class ReactiveStorage<T> {
   #storageArea: string;

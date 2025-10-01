@@ -1,9 +1,9 @@
-import {
+import type {
   RawMagnetLinkData,
   MagnetRecord,
   MinimalMagnetRecord,
   CollectionMode,
-} from "@/lib/types.new";
+} from "@/lib/types";
 import { extractNameFromMagnet } from "@/lib/utils";
 
 export function extractInfoHash(magnetLink: string): string {

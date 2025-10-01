@@ -23,7 +23,7 @@
   import { ReactiveStorage } from "@/lib/reactive-storage.svelte";
   import Input from "@/lib/components/ui/input/input.svelte";
   import { STORAGE_KEYS, DEFAULT_OPTIONS } from "@/lib/constants";
-  import type { MagnetRecord, ExportFormats, MagnetoOptions } from "@/lib/types.new";
+  import type { MagnetRecord, ExportFormats, MagnetoOptions } from "@/lib/types";
   
   let magnetStash = new ReactiveStorage<MagnetRecord[]>(STORAGE_KEYS.STASH, []);
   let optionsStore = new ReactiveStorage<MagnetoOptions>(STORAGE_KEYS.OPTIONS, DEFAULT_OPTIONS);

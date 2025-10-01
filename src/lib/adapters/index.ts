@@ -1,4 +1,4 @@
-import { SourceAdapter } from "@/lib/types.new";
+import type { SourceAdapter } from "@/lib/types";
 
 import { ExtToAdapter } from "@/lib/adapters/ext.to";
 import { KnabenOrgAdapter } from "@/lib/adapters/knaben";

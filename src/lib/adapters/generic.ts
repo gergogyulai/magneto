@@ -1,5 +1,5 @@
-import { RawMagnetLinkData } from "@/lib/types.new";
-import { SourceAdapter } from "@/lib/types.new";
+import type { RawMagnetLinkData } from "@/lib/types";
+import type { SourceAdapter } from "@/lib/types";
 import { extractNameFromMagnet } from "@/lib/utils";
 
 export function GenericAdapter(
@@ -27,4 +27,4 @@ export function GenericAdapter(
   });
 
   return magnetLinks;
-}
+};
