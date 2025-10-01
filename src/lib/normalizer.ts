@@ -1,8 +1,8 @@
 import type {
   RawMagnetLinkData,
   MagnetRecord,
+  MinimalMagnetRecord,
   CollectionMode,
-  MinimalMagnetRecord
 } from "@/lib/types";
 import { extractNameFromMagnet } from "@/lib/utils";
 
