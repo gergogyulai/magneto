@@ -2,9 +2,9 @@ import type {
   RawMagnetLinkData,
   MagnetRecord,
   MinimalMagnetRecord,
-  CollectionMode,
 } from "@/lib/types";
-import { extractNameFromMagnet } from "@/lib/utils";
+import { CollectionMode } from "@/lib/types";
+import { extractNameFromMagnet } from "@/lib/utils";
 
 export function extractInfoHash(magnetLink: string): string {
   const match = magnetLink.match(/urn:btih:([a-zA-Z0-9]+)/i);
