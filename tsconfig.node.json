@@ -1,8 +1,0 @@
-{
-  "compilerOptions": {
-    "composite": true,
-    "module": "ES2022",
-    "moduleResolution": "bundler"
-  },
-  "include": ["vite.config.ts", "./src/**/*.ts"]
-}

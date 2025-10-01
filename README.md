@@ -1,89 +1,86 @@
-> [!NOTE]
-> A major [rewrite](https://github.com/gergogyulai/magneto/tree/rewrite) of Magneto is in progress for improved performance and new features! Stay tuned for updates.
-# Magneto 🧲
+<div align="center">
+    <br/>
+    <p>
+        <img src="public/magneto.svg" title="magneto" alt="magneto logo" width="100" />
+    </p>
+    <p>
+        never lose that magnet link again
+        <br/>
+        <a href="https://magneto.crackhead.engineering">
+            magneto.crackhead.engineering
+        </a>
+    </p>
+    <p>
+        <a href="https://chrome.google.com/webstore/detail/magneto/your-extension-id">
+            🧲 add to chrome
+        </a>
+        <br/>
+        <a href="https://github.com/gergogyulai/magneto/issues">
+            📝 issues
+        </a>
+        <a href="https://github.com/gergogyulai/magneto/discussions">
+            💬 discussions
+        </a>
+    </p>
+    <br/>
+</div>
 
-A privacy-focused Chrome extension for collecting magnet links. Built with Vite + Svelte + TypeScript and Manifest V3.
+magneto quietly saves every magnet link you stumble across. when torrent sites go down, your links stay safe.
 
-## ✨ Features
+### features
+- 🔒 **privacy-first** — no tracking, no servers, no accounts. everything stays on your device.
+- 🧩 **auto-detect** — magnet links are captured automatically while you browse.
+- 🎛️ **whitelist control** — only save links from sites you explicitly approve.
+- 📂 **smart stash** — search, filter, and organize your link archive.
+- 📤 **easy export** — save as txt, json, or csv whenever you want.
+- ⚡ **lightweight** — minimal background footprint, built for speed.
 
-- **Auto-Detect:** Scans webpages for magnet links. 🔍
-- **Lightweight:** Minimal impact on browsing. 🚀
-- **Privacy-First:** Operates locally, no data tracking. 🔒
-- **Simple UI:** View, copy, and manage links easily. 🖱️
-- **Safe Collection:** Whitelist sites for trusted links. ✅
+### installation
 
-## Why Magneto?
+#### extension store
+the easiest way is through the chrome web store:  
+[**→ add magneto to chrome**](https://chrome.google.com/webstore/detail/magneto/your-extension-id) (not yet approved)
+requires **chrome 114+**.  
+*(firefox & edge support coming soon)*  
 
-Torrent sites go down all the time. One day, a link is there, and the next, it’s gone until the site comes back. I got tired of losing access to torrents I meant to download but didn’t get around to. So I built Magneto—a simple, lightweight extension to collect and store magnet links, creating a personal cache in case sites go down.
+#### 🛠 manual install
+1. [download the latest release](https://github.com/gergogyulai/magneto/releases)  
+2. unzip it  
+3. open `chrome://extensions/`  
+4. enable **developer mode**  
+5. click **load unpacked** → select the magneto folder
 
-## ⬇️ Installing
+### development
+magneto is built with **vite + svelte + typescript**.  
+you’ll need **bun** (or node.js 22+).  
 
-You need chrome 114 or later to install the extension.
-
-1.  Download the latest release from [Releases](https://github.com/gergogyulai/magneto/releases).
-2.  Unzip the file.
-3.  Open Chrome and go to `chrome://extensions/`.
-4.  Enable 'Developer mode' in the top right.
-5.  'Load unpacked' and select the unzipped folder.
-
-## 👨‍💻 Developing
-
-Node.js >= 14 or equivalent required
-
-1.  Clone:
-
-    ```shell
-    git clone github.com/gergogyulai/magneto.git
-    cd magneto
-    ```
-
-2.  Install dependencies (choose one):
-
-    ```shell
-    bun install
-    npm install
-    pnpm install
-    ```
-
-3.  Start dev server (choose one):
-
-    ```shell
-    npm run dev
-    bun run dev
-    pnpm run dev
-    ```
-
-### Chrome Dev Mode
-
-1.  Enable 'Developer mode' in Chrome (`chrome://extensions/`).
-2.  'Load unpacked' and select `magneto/build`.
-
-## 📦 Building
-
-```shell
-bun run build # creates a build in the build folder
-npm run build
-pnpm run build
+```bash
+git clone https://github.com/gergogyulai/magneto.git
+cd magneto
+bun i
+bun run dev
 ```
 
-or
+then load the extension from the `magneto/build` folder in `chrome://extensions/`.  
 
-```shell
-bun run zip # creates a zip file in the package folder
-npm run zip
-pnpm run zip
+to build manually:  
+
+```bash
+bun run build
+bun run zip
 ```
 
-## 🛡️ Privacy
 
-- **No Data Collection:** We collect nothing.
-- **Local Only:** All processing is local.
-- **No External Servers:** No communication outside your browser.
+### ethics
+magneto is a **personal archiving tool**.  
+it never sends or shares your data, and it takes **zero responsibility** for what you do with it.  
+**you control what’s collected, and you own your data.**  
 
-## 🤝 Contributing
 
-PRs and issues welcome! 🙏 
+### contributing
+want to improve magneto? thank you 🙏  
+open an issue or PR here: [contribute on github](https://github.com/gergogyulai/magneto).  
 
-## 📜 License
 
-[MIT License](LICENSE)
+### license
+magneto is open source, released under the [MIT license](LICENSE).
