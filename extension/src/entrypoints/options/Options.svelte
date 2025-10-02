@@ -232,7 +232,6 @@
       </CardContent>
     </Card>
 
-    <!-- Footer -->
     <div class="flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground py-4">
       <div class="flex gap-2">
         <span>v{version}</span>
