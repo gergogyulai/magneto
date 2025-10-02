@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "packageManager": "bun@1.2.0",
+  "packageManager": "bun@1.2.21",
   "workspaces": [
     "extension",
-    "docs"
+    "web/*"
   ],
   "scripts": {
     "build": "turbo run build",
