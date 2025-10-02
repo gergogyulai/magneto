@@ -29,6 +29,7 @@
   import { STORAGE_KEYS } from "@/lib/constants";
   import type { MagnetRecord } from "@/lib/types";
   import { ReactiveStorage } from "@/lib/reactive-storage.svelte";
+  import { checkWhitelist, minimatchPatternHostname } from "@/lib/utils";
 
   let magnetStash = new ReactiveStorage<MagnetRecord[]>(STORAGE_KEYS.STASH, []);
   let whitelistedHosts = new ReactiveStorage<string[]>(STORAGE_KEYS.WHITELISTED_HOSTS, ["example.com"]);
@@ -55,15 +56,14 @@
       (link: MagnetRecord) => link.source === currentTab.hostname
     ).length
   );
-  let isCurrentHostWhitelisted = $derived(
-    currentTab.hostname && whitelistedHosts.current!.includes(currentTab.hostname)
-  );
+  let isCurrentHostWhitelisted = currentTab.hostname && checkWhitelist(currentTab.url)
 
   async function addCurrentHost() {
     if (!currentTab.hostname || isCurrentHostWhitelisted) return;
 
     try {
-      whitelistedHosts.current = [...whitelistedHosts.current!, currentTab.hostname];
+      const newHost = `{http,https}://${currentTab.hostname}/**`;
+      whitelistedHosts.current = [...whitelistedHosts.current!, newHost];
       if (collectionEnabled.current) {
         manualCollect();
       }
@@ -185,7 +185,7 @@
       <div class="p-4 border-b bg-muted/20">
         <div class="flex items-center gap-2 mb-3">
           <Shield class="h-4 w-4 text-muted-foreground" />
-          <span class="text-sm font-medium">Site Management</span>
+          <span class="text-sm font-medium">Whitelist Management</span>
         </div>
 
         <div class="flex items-center justify-between p-3 rounded-lg border bg-card">
@@ -241,7 +241,7 @@
                   {#each whitelistedHosts.current! as host (host)}
                     <div class="flex items-center justify-between gap-2 group hover:bg-muted/50 rounded-md p-2 -m-2">
                       <Badge variant="secondary" class="flex-1 justify-start truncate font-normal">
-                        {host}
+                        {minimatchPatternHostname(host)}
                       </Badge>
                       <Button
                         variant="ghost"

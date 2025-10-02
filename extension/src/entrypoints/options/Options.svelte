@@ -9,6 +9,7 @@
   } from "@/lib/components/ui/card";
   import { Label } from "@/lib/components/ui/label";
   import * as Select from "@/lib/components/ui/select/index.js";
+  import Textarea from "@/lib/components/ui/textarea/textarea.svelte";
   import { Switch } from "@/lib/components/ui/switch";
   import { Separator } from "@/lib/components/ui/separator";
   import {
@@ -29,6 +30,23 @@
   
   let magnetStash = new ReactiveStorage<MagnetRecord[]>(STORAGE_KEYS.STASH, []);
   let optionsStore = new ReactiveStorage<MagnetoOptions>(STORAGE_KEYS.OPTIONS, DEFAULT_OPTIONS);
+  let whitelistedHosts = new ReactiveStorage<string[]>(STORAGE_KEYS.WHITELISTED_HOSTS, ["example.com"]);
+
+  // Local state for whitelist editing
+  let whitelistText = $state("");
+  let originalWhitelistText = $state("");
+  
+  // Initialize whitelist text from storage
+  $effect(() => {
+    if (whitelistedHosts.current) {
+      const text = whitelistedHosts.current.join("\n");
+      whitelistText = text;
+      originalWhitelistText = text;
+    }
+  });
+
+  // Check if whitelist has changed
+  let whitelistChanged = $derived(whitelistText !== originalWhitelistText);
 
   let themeLabel = $derived(
     mode.current === "light"
@@ -57,6 +75,17 @@
 
   function handleThemeChange(newMode: string) {
     setMode(newMode as "light" | "dark" | "system");
+  }
+
+  function saveWhitelist() {
+    const hosts = whitelistText
+      .split("\n")
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+    
+    whitelistedHosts.current = hosts;
+    
+    originalWhitelistText = whitelistText;
   }
 </script>
 
@@ -103,6 +132,34 @@
             </Select.Content>
           </Select.Root>
         </div>
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader>
+        <CardTitle class="flex items-center gap-2">
+          <Palette class="h-5 w-5" />
+          Whitelist Management
+        </CardTitle>
+        <CardDescription>Manage the whitelisted sources</CardDescription>
+      </CardHeader>
+      <CardContent class="space-y-4">
+        <div class="space-y-2">
+          <Label for="whitelist-sources">Whitelisted Hosts</Label>
+          <Textarea
+            bind:value={whitelistText}
+            rows={8}
+            id="whitelist-sources"
+            placeholder="Enter one host per line, e.g. example.com&#10;Glob match patterns are supported"
+            class="w-full max-h-32 font-mono text-xs overflow-x-auto whitespace-nowrap"
+          />
+          <p class="text-sm text-muted-foreground">
+            Enter one host per line. Glob patterns (*, ?) are supported.
+          </p>
+        </div>
+        <Button onclick={saveWhitelist} class="w-full" disabled={!whitelistChanged}>
+          Save Whitelist
+        </Button>
       </CardContent>
     </Card>
 
@@ -207,7 +264,7 @@
       <CardContent class="space-y-4">
         <div class="flex items-center justify-between">
           <div class="space-y-1">
-            <Label for="ext-to-adapter">ext.to</Label>
+            <Label for="ext-to-adapter">Ext.to</Label>
             <p class="text-sm text-muted-foreground">
               Enable enhanced data collection for ext.to
             </p>
@@ -219,7 +276,7 @@
         </div>
         <div class="flex items-center justify-between">
           <div class="space-y-1">
-            <Label for="wayback-adapter">Knaben</Label>
+            <Label for="wayback-adapter">Knaben Database</Label>
             <p class="text-sm text-muted-foreground">
               Enable enhanced data collection for knaben.org
             </p>
@@ -227,6 +284,18 @@
           <Switch
             id="wayback-adapter"
             bind:checked={optionsStore.current!.adapters["knaben.org"]}
+            />
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <Label for="wayback-adapter">Wayback Machine</Label>
+            <p class="text-sm text-muted-foreground">
+              Enable enhanced data collection for web.archive.org 
+            </p>
+          </div>
+          <Switch
+              id="wayback-adapter"
+              bind:checked={optionsStore.current!.adapters["web.archive.org"]}
             />
         </div>
       </CardContent>

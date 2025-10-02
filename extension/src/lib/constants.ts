@@ -13,5 +13,6 @@ export const DEFAULT_OPTIONS: MagnetoOptions = {
   adapters: {
     "ext.to": true,
     "knaben.org": true,
+    "web.archive.org": true,
   },
 };

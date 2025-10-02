@@ -6,6 +6,7 @@ import type {
 } from "@/lib/types";
 import { getAdapter } from "@/lib/adapters";
 import { STORAGE_KEYS } from "@/lib/constants";
+import { checkWhitelist } from "@/lib/utils";
 
 console.log("Content script loaded");
 
@@ -53,7 +54,13 @@ export default defineContentScript({
   },
 });
 
-async function handleToggle(): Promise<{ success: boolean }> {
+async function handleToggle(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+    if (!checkWhitelist(location.href)) {
+    return { success: false, error: "Host not in whitelist" };
+  }
   const current =
     (await storage.getItem<boolean>(STORAGE_KEYS.COLLECTION_ENABLED)) || false;
   const newValue = !current;
@@ -66,10 +73,7 @@ async function handleManualCollection(): Promise<{
   success: boolean;
   error?: string;
 }> {
-  const whitelist =
-    (await storage.getItem<string[]>(STORAGE_KEYS.WHITELISTED_HOSTS)) || [];
-
-  if (!whitelist.includes(location.hostname)) {
+  if (!checkWhitelist(location.href)) {
     return { success: false, error: "Host not in whitelist" };
   }
 
@@ -83,13 +87,8 @@ let observer: MutationObserver | null = null;
 
 async function startWatching(): Promise<void> {
   console.log("Starting to watch for magnet links...");
-  const whitelist =
-    (await storage.getItem<string[]>(STORAGE_KEYS.WHITELISTED_HOSTS)) || [];
-  
-  console.log("Current whitelist:", whitelist);
-  console.log("Current hostname:", location.hostname);
 
-  if (!whitelist.includes(location.hostname)) {
+  if (!checkWhitelist(location.href)) {
     console.log("Hostname not in whitelist, not watching");
     return;
   }
