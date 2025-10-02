@@ -24,6 +24,8 @@
   import Input from "@/lib/components/ui/input/input.svelte";
   import { STORAGE_KEYS, DEFAULT_OPTIONS } from "@/lib/constants";
   import type { MagnetRecord, ExportFormats, MagnetoOptions } from "@/lib/types";
+
+  const version = browser.runtime.getManifest().version;
   
   let magnetStash = new ReactiveStorage<MagnetRecord[]>(STORAGE_KEYS.STASH, []);
   let optionsStore = new ReactiveStorage<MagnetoOptions>(STORAGE_KEYS.OPTIONS, DEFAULT_OPTIONS);
@@ -229,5 +231,22 @@
         </div>
       </CardContent>
     </Card>
+
+    <!-- Footer -->
+    <div class="flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground py-4">
+      <div class="flex gap-2">
+        <span>v{version}</span>
+        |
+        <a
+          href="https://github.com/gergogyulai/magneto"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-foreground transition-colors"
+        >
+          GitHub
+        </a>
+      </div>
+      <span class="italic">never lose that magnet link again</span>
+    </div>
   </div>
 </GlobalLayout>
