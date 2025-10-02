@@ -39,12 +39,15 @@ export default defineConfig({
       chrome: "/Applications/Google Chrome Dev.app/Contents/MacOS/Google Chrome Dev",
     },
     startUrls: [
-      "https://v0-random-magnet-links.vercel.app/",
+      "https://magneto-sample.vercel.app/",
       "https://web.archive.org/web/20250226103720/https://torrentgalaxy.to/",
       "https://knaben.org/browse/"
     ]
   },
   vite: () => ({
     plugins: [tailwindcss()],
+    esbuild: {
+      drop: buildType === 'production' ? ['console', 'debugger'] : [],
+    }
   }),
 });
