@@ -19,6 +19,9 @@
       "@adapters/*": ["src/adapters/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": [
+    "../../packages/types/src/**/*.ts",
+    "src/**/*"
+  ],
   "exclude": ["node_modules", "dist"]
 }

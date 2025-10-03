@@ -1,6 +1,12 @@
 import { defineConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
 import packageData from './package.json';
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const buildType = process.env.NODE_ENV || 'production';
 
@@ -45,8 +51,8 @@ export default defineConfig({
     ]
   },
   alias: {
-    '@magneto/adapters': '../../packages/adapters/src',
-    '@magneto/types': '../../packages/types/src',
+    '@magneto/adapters': resolve(__dirname, '../../packages/adapters/src'),
+    '@magneto/types': resolve(__dirname, '../../packages/types/src'),
   },
   vite: () => ({
     plugins: [tailwindcss()],
