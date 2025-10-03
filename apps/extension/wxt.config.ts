@@ -34,7 +34,12 @@ export default defineConfig({
     name: `${packageData.displayName}${process.env.NODE_ENV === 'development' ? ` 🧰 dev` : ''}`,
     version: `${packageData.version}`,
     description: packageData.description,
-    permissions: ['storage', 'tabs', "downloads"]
+    permissions: ['storage', 'tabs', "downloads"],
+    browser_specific_settings: {
+      gecko: {
+        id: `${packageData.name}@${packageData.version}cK9aN2Xc7KMKwQuZsVac5avo6oEIfqjzJfOp2yDEMsETzeOktw`,
+      }
+    }
   },
   zip: {
     artifactTemplate: `{{name}}-${packageData.version}${getVersionSuffix(buildType)}-{{browser}}.zip`,
