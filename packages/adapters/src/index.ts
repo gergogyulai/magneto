@@ -3,24 +3,28 @@ import type { SourceAdapter } from "@magneto/types";
 import { ExtToAdapter } from "./ext.to";
 import { KnabenOrgAdapter } from "./knaben";
 import { GenericAdapter } from "./generic";
-import { ArchiveOrgAdapter } from "./archive.org";
+import { WaybackMachineAdapter } from "./wayback-machine";
 
-export const sourceAdapters = {
-  generic: GenericAdapter,
-  "knaben.org": KnabenOrgAdapter,
-  "ext.to": ExtToAdapter,
-  "web.archive.org": ArchiveOrgAdapter,
-  "archive.org": ArchiveOrgAdapter,
-} satisfies Record<string, SourceAdapter>;
+const adapters: SourceAdapter[] = [
+  GenericAdapter,
+  KnabenOrgAdapter,
+  ExtToAdapter,
+  WaybackMachineAdapter,
+];
 
-export function getAdapter(hostname: string) {
-  if ((hostname as SourceAdapterKey) in sourceAdapters) {
-    return sourceAdapters[hostname as SourceAdapterKey];
-  }
-  return sourceAdapters["generic"];
+export const sourceAdapters: Record<string, SourceAdapter> = adapters.reduce(
+  (acc, adapter) => {
+    adapter.domains.forEach((domain) => {
+      acc[domain] = adapter;
+    });
+    return acc;
+  },
+  {} as Record<string, SourceAdapter>
+);
+
+export function getAdapter(hostname: string): SourceAdapter {
+  return sourceAdapters[hostname] ?? GenericAdapter;
 }
 
 export type SourceAdapterKey = keyof typeof sourceAdapters;
-
-// Re-export adapters individually
-export { ExtToAdapter, KnabenOrgAdapter, GenericAdapter, ArchiveOrgAdapter };
+export { ExtToAdapter, KnabenOrgAdapter, GenericAdapter, WaybackMachineAdapter };

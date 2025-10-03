@@ -21,7 +21,10 @@ export async function checkWhitelist(url: string): Promise<boolean> {
   const whitelist =
     (await storage.getItem<string[]>(STORAGE_KEYS.WHITELISTED_HOSTS)) || [];
 
-  return whitelist.some((pattern) => minimatch(url, pattern, { nocase: true }));
+  const iswhitelisted = whitelist.some((pattern) => minimatch(url, pattern, { nocase: true }));
+  console.log("Whitelist check:", { url, whitelist, iswhitelisted });
+  
+  return iswhitelisted;
 }
 
 export function minimatchPatternHostname(host: string): string {

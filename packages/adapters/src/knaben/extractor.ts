@@ -1,6 +1,6 @@
 import type { RawMagnetLinkData } from "@magneto/types";
 
-function extractMagnetLinkData(
+export function extractMagnetLinkData(
   tableElement: HTMLTableElement
 ): RawMagnetLinkData[] {
   const rawMagnetLinkData: RawMagnetLinkData[] = [];
@@ -56,27 +56,4 @@ function extractMagnetLinkData(
   });
 
   return rawMagnetLinkData;
-}
-
-export function KnabenOrgAdapter(
-  document: Document,
-  location: Location
-): RawMagnetLinkData[] {
-  if (!document || !location) return [];
-
-  if (location.pathname.startsWith("/browse/")) {
-    return extractMagnetLinkData(
-      document.querySelector(
-        "body > section:nth-child(2) > div > div:nth-child(7) > table"
-      )!
-    );
-  } else if (location.pathname.startsWith("/search/")) {
-    return extractMagnetLinkData(
-      document.querySelector(
-        "body > section:nth-child(2) > div > div.p-3 > table"
-      )!
-    );
-  } else {
-    return [];
-  }
 }

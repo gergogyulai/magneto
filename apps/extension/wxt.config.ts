@@ -45,9 +45,9 @@ export default defineConfig({
       chrome: "/Applications/Google Chrome Dev.app/Contents/MacOS/Google Chrome Dev",
     },
     startUrls: [
-      "https://magneto-sample.vercel.app/",
       "https://web.archive.org/web/20250226103720/https://torrentgalaxy.to/",
-      "https://knaben.org/browse/"
+      "https://magneto.crackhead.engineering/sample-magnet-links?min=120&max=270",
+      "https://knaben.org/browse/",
     ]
   },
   alias: {
