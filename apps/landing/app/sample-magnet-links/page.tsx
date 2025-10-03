@@ -13,7 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RefreshCw, Link, Download, Check, Clipboard } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { RefreshCw, Link as LinkIcon, Download, Check, Clipboard, Settings, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 interface MagnetLink {
   name: string;
@@ -126,112 +128,203 @@ export default function MagnetLinksGenerator() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-6xl mx-auto">
-        <Card className="mb-6">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold flex items-center justify-center gap-2">
-              <Download className="h-8 w-8" />
-              Random Magnet Links Generator
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Generates {magnetLinks.length} random magnet links
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-4 justify-center">
-              <div className="flex flex-col">
-                <Label htmlFor="minLinks">Min Links</Label>
-                <Input
-                  id="minLinks"
-                  type="number"
-                  value={minLinks}
-                  onChange={(e) => setMinLinks(Number(e.target.value))}
-                  className="w-24 text-center"
-                  min={1}
-                />
-              </div>
-              <div className="flex flex-col">
-                <Label htmlFor="maxLinks">Max Links</Label>
-                <Input
-                  id="maxLinks"
-                  type="number"
-                  value={maxLinks}
-                  onChange={(e) => setMaxLinks(Number(e.target.value))}
-                  className="w-24 text-center"
-                  min={1}
-                />
-              </div>
-            </div>
-            <div className="text-center">
-              <Button
-                onClick={generateMagnetLinks}
-                disabled={isGenerating}
-                size="lg"
-                className="gap-2"
-              >
-                <RefreshCw
-                  className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`}
-                />
-                {isGenerating ? "Generating..." : "Generate New Links"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        <div className="grid gap-3">
-          {magnetLinks.map((link, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Link className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <h3 className="font-medium truncate">{link.name}</h3>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>Size: {link.size}</span>
-                      <span className="font-mono text-xs">
-                        Hash: {link.hash.substring(0, 16)}...
-                      </span>
-                    </div>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="relative py-8 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <div className="container mx-auto max-w-4xl text-center relative">
+          <Badge variant="secondary" className="mb-3 text-sm px-3 py-1">
+            <Sparkles className="w-3.5 h-3.5 mr-1.5 inline" />
+            Test Generator
+          </Badge>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3 text-balance leading-tight">
+            Random <span className="text-primary">Magnet Links</span> Generator
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground mb-4 text-pretty max-w-2xl mx-auto">
+            Generate realistic fake magnet links for testing Magneto.
+          </p>
+        </div>
+      </section>
+
+      {/* Configuration Section */}
+      <section className="py-6 px-4 bg-muted/50">
+        <div className="container mx-auto max-w-5xl">
+          <Card className="border-2">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                {/* Left: Icon and Title */}
+                <div className="flex items-center gap-4 flex-shrink-0">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <Settings className="w-6 h-6 text-primary" />
                   </div>
+                  <div className="text-left">
+                    <CardTitle className="text-lg font-bold mb-0.5">Configuration</CardTitle>
+                    <CardDescription className="text-xs">
+                      Customize link generation
+                    </CardDescription>
+                  </div>
+                </div>
+
+                {/* Center: Inputs */}
+                <div className="flex gap-3 items-end">
+                  <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="minLinks" className="text-xs font-medium">
+                      Min Links
+                    </Label>
+                    <Input
+                      id="minLinks"
+                      type="number"
+                      value={minLinks}
+                      onChange={(e) => setMinLinks(Number(e.target.value))}
+                      className="w-24 text-center h-9"
+                      min={1}
+                    />
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="maxLinks" className="text-xs font-medium">
+                      Max Links
+                    </Label>
+                    <Input
+                      id="maxLinks"
+                      type="number"
+                      value={maxLinks}
+                      onChange={(e) => setMaxLinks(Number(e.target.value))}
+                      className="w-24 text-center h-9"
+                      min={1}
+                    />
+                  </div>
+                </div>
+
+                {/* Center-Right: Badges */}
+                <div className="flex items-center gap-2 flex-wrap justify-center">
+                  <Badge variant="secondary" className="text-xs px-2.5 py-0.5">
+                    Generating: <span className="font-bold ml-1">{magnetLinks.length}</span>
+                  </Badge>
+                  <Badge variant="outline" className="text-xs px-2.5 py-0.5 font-mono">
+                    ?min={minLinks}&max={maxLinks}
+                  </Badge>
+                </div>
+
+                {/* Right: Button */}
+                <div className="flex-shrink-0">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-shrink-0 bg-transparent gap-2"
-                    onClick={() => handleCopy(link.magnetUrl, index)}
+                    onClick={generateMagnetLinks}
+                    disabled={isGenerating}
+                    className="px-6 gap-2"
                   >
-                    {copiedIndex === index ? (
-                      <>
-                        <Check className="h-3 w-3 text-green-500" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Clipboard className="h-3 w-3" />
-                        Copy Magnet
-                      </>
-                    )}
+                    <RefreshCw
+                      className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`}
+                    />
+                    {isGenerating ? "Generating..." : "Generate"}
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
+      </section>
 
-        <div className="mt-8 text-center text-sm text-muted-foreground">
-          <p>
-            Generated {magnetLinks.length} magnet links • Refresh or click the
-            button to generate new ones
-          </p>
-          <p className="mt-1">
-            Current config:{" "}
-            <code>
-              ?min={minLinks}&max={maxLinks}
-            </code>
-          </p>
+      {/* Generated Links Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Generated Magnet Links
+            </h2>
+            <p className="text-muted-foreground text-base md:text-lg">
+              Click any link to copy it to your clipboard
+            </p>
+          </div>
+
+          <div className="grid gap-4">
+            {magnetLinks.map((link, index) => (
+              <Card
+                key={index}
+                className="border-2 hover:border-primary/50 transition-all hover:shadow-md group"
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-6">
+                    <div className="flex-1 min-w-0 flex gap-4">
+                      {/* Icon */}
+                      <div className="w-11 h-11 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/15 transition-colors mt-0.5">
+                        <LinkIcon className="h-5 w-5 text-primary" />
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 space-y-2">
+                        {/* Title */}
+                        <h3 className="font-semibold text-base text-foreground truncate leading-snug">
+                          {link.name}
+                        </h3>
+                        
+                        {/* Metadata */}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                            <Download className="h-3.5 w-3.5 flex-shrink-0" />
+                            <span className="font-medium">{link.size}</span>
+                          </div>
+                          <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span className="font-mono bg-muted/50 px-2 py-0.5 rounded">
+                              {link.hash.substring(0, 8)}...{link.hash.substring(32, 40)}
+                            </span>
+                          </div>
+                          <Badge variant="secondary" className="text-xs px-2 py-0 h-5">
+                            #{index + 1}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Action Button */}
+                    <div className="flex-shrink-0">
+                      <Button
+                        variant={copiedIndex === index ? "default" : "outline"}
+                        size="sm"
+                        className={`gap-2 font-medium min-w-[100px] transition-all ${
+                          copiedIndex === index ? "bg-green-600 hover:bg-green-700 border-green-600" : ""
+                        }`}
+                        onClick={() => handleCopy(link.magnetUrl, index)}
+                      >
+                        {copiedIndex === index ? (
+                          <>
+                            <Check className="h-4 w-4" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Clipboard className="h-4 w-4" />
+                            Copy
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Info Section */}
+      <section className="py-12 px-4 bg-muted/50">
+        <div className="container mx-auto max-w-4xl text-center">
+          <p className="text-muted-foreground text-base">
+            Generated <span className="font-bold text-foreground">{magnetLinks.length}</span> magnet links
+          </p>
+          <p className="text-muted-foreground text-sm mt-2">
+            These are randomly generated fake magnet links for testing purposes only
+          </p>
+          
+          <div className="mt-8">
+            <Link href="/">
+              <Button variant="outline" size="lg" className="px-6 py-5 text-base font-semibold">
+                ← Back to Home
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
