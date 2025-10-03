@@ -1,3 +1,5 @@
+import type { SourceAdapterKey } from "@magneto/adapters";
+
 /**
  * Mode selection for what data is collected/stored.
  * - Minimal: only hash, source, date
@@ -52,6 +54,14 @@ export type MagnetRecord = MinimalMagnetRecord & {
  * you'll be serializing arrays of MagnetRecord into JSON.
  */
 export type StoredMagnets = MagnetRecord[];
+
+export type ExportFormats = "json" | "csv" | "txt";
+
+export type MagnetoOptions = {
+  minimalCollectionMode: { enabled: boolean; collectNames: boolean };
+  rollingCollection: { enabled: boolean; limit: number };
+  adapters: Partial<Record<SourceAdapterKey, boolean>>;
+};
 
 export interface SourceAdapter {
   /** Stable machine‑friendly identifier (e.g. "knaben-org") */

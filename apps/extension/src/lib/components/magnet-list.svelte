@@ -17,7 +17,7 @@
   
   async function handleCopyMagnetUri(link: MagnetRecord) {
     try {
-      await navigator.clipboard.writeText(link.magnetLink);
+      await navigator.clipboard.writeText(link.magnetLink!);
       console.log("Magnet link copied:", link.magnetLink);
       toast.success("Magnet link copied to clipboard");
     } catch (err) {
