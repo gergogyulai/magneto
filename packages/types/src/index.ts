@@ -64,9 +64,19 @@ export type StoredMagnets = MagnetRecord[];
 export type ExportFormats = "json" | "csv" | "txt";
 
 export type MagnetoOptions = {
-  minimalCollectionMode: { enabled: boolean; collectNames: boolean };
-  rollingCollection: { enabled: boolean; limit: number };
+  minimalCollectionMode: MinimalCollectionModeOptions;
+  rollingCollection: RollingCollectionOptions;
   adapters: Partial<Record<SourceAdapterKey, boolean>>;
+};
+
+export type RollingCollectionOptions = {
+  enabled: boolean;
+  limit: number;
+};
+
+export type MinimalCollectionModeOptions = { 
+  enabled: boolean; 
+  collectNames: boolean 
 };
 
 export interface SourceAdapter {

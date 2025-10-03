@@ -1,4 +1,4 @@
-import type { MagnetRecord, StoredMagnets, RawMagnetLinkData } from "@magneto/types";
+import type { MagnetRecord, StoredMagnets, RawMagnetLinkData, MagnetoOptions } from "@magneto/types";
 import { CollectionMode } from "@magneto/types";
 import { handleExportMagnets } from "@/lib/stash-exporter";
 import { STORAGE_KEYS } from "@/lib/constants";
@@ -36,8 +36,9 @@ async function handleMessage(request: any): Promise<MessageResponse> {
 async function handleMagnetLinks(newMagnetLinks: RawMagnetLinkData[]): Promise<MessageResponse> {
   if (!Array.isArray(newMagnetLinks) || newMagnetLinks.length === 0) return { success: false, error: "No magnet links" };
 
-  const normalizedLinks = newMagnetLinks.map((raw) => normalizeMagnetData(raw, { mode: CollectionMode.Full })
-  );
+  const options = (await storage.getItem<MagnetoOptions>(STORAGE_KEYS.OPTIONS));
+  
+  const normalizedLinks = newMagnetLinks.map((raw) => normalizeMagnetData(raw, { minimalCollectionMode: options!.minimalCollectionMode }));
 
   const deduplicatedLinks = Array.from(
     new Map(normalizedLinks.map((link) => [link.infoHash, link])).values()

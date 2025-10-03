@@ -77,7 +77,7 @@ async function handleManualCollection(): Promise<{
     return { success: false, error: "Host not in whitelist" };
   }
 
-  const rawData = extractMagnetData(document, location);
+  const rawData = await extractMagnetData(document, location);
   await saveMagnets(rawData);
 
   return { success: true };
@@ -99,16 +99,16 @@ async function startWatching(): Promise<void> {
   }
 
   console.log("Setting up mutation observer");
-  observer = new MutationObserver(() => {
+  observer = new MutationObserver(async () => {
     console.log("DOM mutation detected, extracting magnets");
-    const rawData = extractMagnetData(document, location);
+    const rawData = await extractMagnetData(document, location);
     saveMagnets(rawData);
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
 
   console.log("Performing initial magnet extraction");
-  const rawData = extractMagnetData(document, location);
+  const rawData = await extractMagnetData(document, location);
   saveMagnets(rawData);
 }
 
@@ -122,10 +122,10 @@ function stopWatching(): void {
 /**
  * ---- Adapter Extraction ----
  */
-function extractMagnetData(
+async function extractMagnetData(
   document: Document,
   location: Location
-): RawMagnetLinkData[] {
+): Promise<RawMagnetLinkData[]> {
   const adapter = getAdapter(location.hostname);
   return adapter.handler(document, location);
 }

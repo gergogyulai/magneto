@@ -2,6 +2,7 @@ import type {
   RawMagnetLinkData,
   MagnetRecord,
   MinimalMagnetRecord,
+  MinimalCollectionModeOptions,
 } from "@magneto/types";
 import { CollectionMode } from "@magneto/types";
 import { extractNameFromMagnet } from "@/lib/utils";
@@ -45,9 +46,9 @@ export function parseIntSafe(numStr?: string): number | null {
 
 export function normalizeMagnetData(
   raw: RawMagnetLinkData,
-  options: { mode: CollectionMode }
+  options: { minimalCollectionMode: MinimalCollectionModeOptions }
 ): MagnetRecord {
-  const { mode } = options;
+  const { minimalCollectionMode } = options;
   const infoHash = extractInfoHash(raw.magnetLink);
 
   const embeddedName = extractNameFromMagnet(raw.magnetLink);
@@ -59,10 +60,10 @@ export function normalizeMagnetData(
     scrapedAt: raw.scrapedAt,
   };
 
-  if (mode === CollectionMode.Minimal) {
+  if (minimalCollectionMode.enabled) {
     return base;
   }
-  if (mode === CollectionMode.MinimalWithName) {
+  if (minimalCollectionMode.enabled && minimalCollectionMode.collectNames) {
     return {
       ...base,
       name: bestName,
