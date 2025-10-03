@@ -66,8 +66,10 @@ export type ExportFormats = "json" | "csv" | "txt";
 export type MagnetoOptions = {
   minimalCollectionMode: MinimalCollectionModeOptions;
   rollingCollection: RollingCollectionOptions;
-  adapters: Partial<Record<SourceAdapterKey, boolean>>;
+  adapters: AdapterOptions;
 };
+
+export type AdapterOptions = Partial<Record<SourceAdapterKey, boolean>>;
 
 export type RollingCollectionOptions = {
   enabled: boolean;

@@ -3,6 +3,7 @@ import type {
   RawMagnetLinkData,
   SourceAdapter,
   CollectionMode,
+  MagnetoOptions,
 } from "@magneto/types";
 import { getAdapter } from "@magneto/adapters";
 import { STORAGE_KEYS } from "@/lib/constants";
@@ -126,8 +127,12 @@ async function extractMagnetData(
   document: Document,
   location: Location
 ): Promise<RawMagnetLinkData[]> {
-  const adapter = getAdapter(location.hostname);
-  return adapter.handler(document, location);
+  const adapterOptions = (await storage.getItem<MagnetoOptions>(STORAGE_KEYS.OPTIONS))?.adapters;
+
+  const adapterCandidate = getAdapter(location.hostname, adapterOptions);
+
+  console.log(`Using adapter: ${adapterCandidate.name} for ${location.hostname}`);
+  return adapterCandidate.handler(document, location);
 }
 
 async function saveMagnets(
