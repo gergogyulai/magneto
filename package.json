@@ -1,13 +1,13 @@
 {
   "name": "magneto-monorepo",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "license": "MIT",
   "packageManager": "bun@1.2.21",
   "workspaces": [
-    "extension",
-    "web/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "build": "turbo run build",

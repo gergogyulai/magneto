@@ -1,0 +1,11 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "useDefineForClassFields": true,
+    "moduleResolution": "bundler"
+  },
+  "include": [
+    "../../packages/adapters/src/**/*.ts",
+    "../../packages/types/src/**/*.ts",
+  ]
+}
