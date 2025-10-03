@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - 'release/**'
+      - "release/**"
   workflow_dispatch:
 
 jobs:
@@ -30,7 +30,6 @@ jobs:
         with:
           name: extension-build
           path: apps/extension/dist/*.zip
-
   upload:
     needs: build
     runs-on: ubuntu-latest
@@ -41,9 +40,31 @@ jobs:
           name: extension-build
           path: build-output
 
-      - name: Upload assets to Release Draft
+      - name: Determine release version
+        id: version
+        run: |
+          ref="${GITHUB_REF#refs/heads/}"
+          if [[ "$ref" == "main" ]]; then
+            version=$(jq -r .version apps/extension/package.json)
+          elif [[ "$ref" == release/* ]]; then
+            version="${ref#release/}"
+          fi
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Create Git tag
+        run: |
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          if ! git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            git tag "v${{ steps.version.outputs.version }}"
+            git push origin "v${{ steps.version.outputs.version }}"
+          fi
+
+      - name: Upload assets to Release (create/update)
         uses: softprops/action-gh-release@v2
         with:
           files: build-output/*.zip
+          tag_name: v${{ steps.version.outputs.version }}
+          prerelease: ${{ startsWith(github.ref, 'refs/heads/release/') }}
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
