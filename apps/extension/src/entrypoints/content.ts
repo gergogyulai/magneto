@@ -58,7 +58,7 @@ async function handleToggle(): Promise<{
   success: boolean;
   error?: string;
 }> {
-    if (!checkWhitelist(location.href)) {
+    if (!(await checkWhitelist(location.href))) {
     return { success: false, error: "Host not in whitelist" };
   }
   const current =
@@ -73,7 +73,7 @@ async function handleManualCollection(): Promise<{
   success: boolean;
   error?: string;
 }> {
-  if (!checkWhitelist(location.href)) {
+  if (!(await checkWhitelist(location.href))) {
     return { success: false, error: "Host not in whitelist" };
   }
 
@@ -88,10 +88,11 @@ let observer: MutationObserver | null = null;
 async function startWatching(): Promise<void> {
   console.log("Starting to watch for magnet links...");
 
-  if (!checkWhitelist(location.href)) {
+  if (!(await checkWhitelist(location.href))) {
     console.log("Hostname not in whitelist, not watching");
     return;
   }
+
   if (observer) {
     console.log("Observer already exists");
     return;
