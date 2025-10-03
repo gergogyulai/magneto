@@ -1,5 +1,12 @@
 import type { SourceAdapterKey } from "@magneto/adapters";
 
+
+export type StorageKey =
+  | `local:${string}`
+  | `sync:${string}`
+  | `session:${string}`
+  | `managed:${string}`;
+
 /**
  * Mode selection for what data is collected/stored.
  * - Minimal: only hash, source, date
