@@ -2,9 +2,9 @@ import type { StorageKey, MagnetoOptions } from "@magneto/types";
 
 export const STORAGE_KEYS = {
   STASH: "local:magneto-stash",
-  WHITELISTED_HOSTS: "sync:magneto-whitelistedHosts",
-  COLLECTION_ENABLED: "sync:magneto-collectionEnabled",
-  OPTIONS: "sync:magneto-options",
+  WHITELISTED_HOSTS: "local:magneto-whitelistedHosts",
+  COLLECTION_ENABLED: "local:magneto-collectionEnabled",
+  OPTIONS: "local:magneto-options",
 } as const satisfies Record<string, StorageKey>;
 
 export const DEFAULT_OPTIONS: MagnetoOptions = {
