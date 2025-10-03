@@ -26,6 +26,7 @@ function getVersionSuffix(type: string): string {
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   srcDir: 'src',
+  outDir: 'dist',
   modules: ['@wxt-dev/module-svelte'],
   manifestVersion: 3,
   targetBrowsers: ['chrome', 'firefox'],
