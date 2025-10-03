@@ -1,5 +1,5 @@
-import type { RawMagnetLinkData } from "@/lib/types";
-import type { SourceAdapter } from "@/lib/types";
+import type { RawMagnetLinkData } from "@magneto/types";
+import type { SourceAdapter } from "@magneto/types";
 import { extractNameFromMagnet } from "@/lib/utils";
 
 export function GenericAdapter(

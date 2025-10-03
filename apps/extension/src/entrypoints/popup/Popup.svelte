@@ -27,7 +27,7 @@
   import { currentTab } from "@/lib/current-host.svelte";
   import GlobalLayout from "@/lib/components/global-layout.svelte";
   import { STORAGE_KEYS } from "@/lib/constants";
-  import type { MagnetRecord } from "@/lib/types";
+  import type { MagnetRecord } from "@magneto/types";
   import { ReactiveStorage } from "@/lib/reactive-storage.svelte";
   import { checkWhitelist, minimatchPatternHostname } from "@/lib/utils";
 

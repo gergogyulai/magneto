@@ -1,4 +1,4 @@
-import type { RawMagnetLinkData } from "@/lib/types";
+import type { RawMagnetLinkData } from "@magneto/types";
 
 function extractMagnetLinkData(
   tableElement: HTMLTableElement,

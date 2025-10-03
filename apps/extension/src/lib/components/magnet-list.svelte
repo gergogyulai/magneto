@@ -1,6 +1,6 @@
 <!-- src/lib/components/magnet-list.svelte -->
 <script lang="ts">
-  import type { MagnetRecord } from "@/lib/types";
+  import type { MagnetRecord } from "@magneto/types";
   import { Button } from "@/lib/components/ui/button";
   import { Badge } from "@/lib/components/ui/badge";
   import * as DropdownMenu from "@/lib/components/ui/dropdown-menu";

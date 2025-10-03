@@ -3,7 +3,7 @@ import type {
   RawMagnetLinkData,
   SourceAdapter,
   CollectionMode,
-} from "@/lib/types";
+} from "@magneto/types";
 import { getAdapter } from "@/lib/adapters";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { checkWhitelist } from "@/lib/utils";

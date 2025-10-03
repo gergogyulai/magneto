@@ -1,5 +1,5 @@
-import type { MagnetRecord, StoredMagnets, RawMagnetLinkData } from "@/lib/types";
-import { CollectionMode } from "@/lib/types";
+import type { MagnetRecord, StoredMagnets, RawMagnetLinkData } from "@magneto/types";
+import { CollectionMode } from "@magneto/types";
 import { handleExportMagnets } from "@/lib/stash-exporter";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { initializeStorage } from "@/lib/init";

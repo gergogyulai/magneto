@@ -24,7 +24,7 @@
   import { ReactiveStorage } from "@/lib/reactive-storage.svelte";
   import Input from "@/lib/components/ui/input/input.svelte";
   import { STORAGE_KEYS, DEFAULT_OPTIONS } from "@/lib/constants";
-  import type { MagnetRecord, ExportFormats, MagnetoOptions } from "@/lib/types";
+  import type { MagnetRecord, ExportFormats, MagnetoOptions } from "@magneto/types";
 
   const version = browser.runtime.getManifest().version;
   

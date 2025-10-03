@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { MagnetRecord } from "@/lib/types";
+  import type { MagnetRecord } from "@magneto/types";
   import {
     Card,
     CardContent,

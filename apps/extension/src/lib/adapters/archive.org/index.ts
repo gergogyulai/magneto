@@ -1,4 +1,4 @@
-import type { RawMagnetLinkData } from "@/lib/types";
+import type { RawMagnetLinkData } from "@magneto/types";
 
 const isWaybackSnapshot = (loc: Location) =>
 	  loc.hostname === "web.archive.org" && /^\/web\/\d{14}\//.test(loc.pathname);

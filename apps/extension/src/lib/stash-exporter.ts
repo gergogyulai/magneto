@@ -1,4 +1,4 @@
-import type { MagnetRecord } from "@/lib/types";
+import type { MagnetRecord } from "@magneto/types";
 import { STORAGE_KEYS } from "@/lib/constants";
 
 interface ExportResult {

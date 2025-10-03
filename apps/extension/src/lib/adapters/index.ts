@@ -1,4 +1,4 @@
-import type { SourceAdapter } from "@/lib/types";
+import type { SourceAdapter } from "@magneto/types";
 
 import { ExtToAdapter } from "@/lib/adapters/ext.to";
 import { KnabenOrgAdapter } from "@/lib/adapters/knaben";
