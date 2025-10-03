@@ -70,7 +70,7 @@ export default function RootLayout({
 
                   <div className="flex items-center space-x-6 text-sm">
                     <Link
-                      href="/privacy"
+                      href="/sample-magnet-links"
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
                       Sample Magnetlink Generator
