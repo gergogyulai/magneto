@@ -33,7 +33,7 @@ magneto quietly saves every magnet link you stumble across. when torrent sites g
 - 🎛️ **whitelist control** — only save links from sites you explicitly approve.
 - 📂 **smart stash** — search, filter, and organize your link archive.
 - 📤 **easy export** — save as txt, json, or csv whenever you want.
-- ⚡ **lightweight** — minimal background footprint, built for speed.
+- ⚡ **lightweight** — only 997 KB, minimal background footprint, built for speed.
 
 ### installation
 
