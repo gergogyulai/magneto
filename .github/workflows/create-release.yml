@@ -1,10 +1,9 @@
-name: Build & Release Extension
+name: Build & Upload Extension
 
 on:
   push:
     branches:
       - main
-      - dev
       - 'release/**'
   workflow_dispatch:
 
@@ -23,7 +22,7 @@ jobs:
       - name: Install deps
         run: bun install --frozen-lockfile
 
-      - name: Build extension (Turbo filter)
+      - name: Build extension
         run: bun run build --filter=magneto
 
       - name: Upload build artifact
@@ -32,10 +31,9 @@ jobs:
           name: extension-build
           path: apps/extension/dist/*.zip
 
-  release:
+  upload:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -43,26 +41,9 @@ jobs:
           name: extension-build
           path: build-output
 
-      - name: Determine release version
-        id: version
-        run: |
-          ref="${GITHUB_REF#refs/heads/}"
-          if [[ "$ref" == "main" ]]; then
-            # main branch → read version from package.json
-            version=$(jq -r .version apps/extension/package.json)
-            echo "VERSION=v$version" >> $GITHUB_ENV
-          elif [[ "$ref" == release/* ]]; then
-            # release branch suffix → release/1.2.3 => v1.2.3
-            version="${ref#release/}"
-            echo "VERSION=v$version" >> $GITHUB_ENV
-          fi
-
-      - name: Publish GitHub Release
+      - name: Upload assets to Release Draft
         uses: softprops/action-gh-release@v2
         with:
           files: build-output/*.zip
-          tag_name: ${{ env.VERSION }}
-          prerelease: ${{ startsWith(github.ref, 'refs/heads/release/') }}
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
