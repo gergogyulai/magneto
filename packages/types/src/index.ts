@@ -1,6 +1,5 @@
 import type { SourceAdapterKey } from "@magneto/adapters";
 
-
 export type StorageKey =
   | `local:${string}`
   | `sync:${string}`
