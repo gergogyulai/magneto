@@ -145,7 +145,7 @@ export default function PrivacyPolicy() {
                       <div>
                         <h4 className="font-semibold text-foreground text-lg mb-1">Magnet Links</h4>
                         <p className="text-muted-foreground text-base">
-                          When Magneto detects a magnet link on a whitelisted website, it stores: the magnet URI (including info hash, display name, and trackers), the source URL where it was found, the collection timestamp, and any metadata extracted from the link itself. This data is stored in your browser's local storage area.
+                          When Magneto detects a magnet link on a whitelisted website, it stores: the magnet URI (including info hash, display name, and trackers), the source URL where it was found, the collection timestamp, and any metadata extracted from the link itself. When a site-specific adapter is available, we also extract enhanced metadata from the page (like file size, seeders, leechers, and category information). All this data is stored in your browser's local storage area.
                         </p>
                       </div>
                     </div>
@@ -191,7 +191,7 @@ export default function PrivacyPolicy() {
                       <div>
                         <h4 className="font-semibold text-foreground text-lg mb-1">Browsing History or Activity</h4>
                         <p className="text-muted-foreground text-base">
-                          We don't log which websites you visit (even whitelisted ones), what time you visit them, how long you stay, or any browsing patterns. The content script only looks for magnet links—nothing else.
+                          We don't log which websites you visit (even whitelisted ones), what time you visit them, how long you stay, or any browsing patterns. The content script only looks for magnet links and related torrent metadata on whitelisted pages—nothing else. Page content is processed locally and immediately discarded; only the extracted magnet links and metadata are stored.
                         </p>
                       </div>
                     </div>
@@ -364,13 +364,13 @@ export default function PrivacyPolicy() {
                 </CardTitle>
                 <CardDescription className="text-base leading-relaxed space-y-2 pt-2">
                   <p>
-                    <strong className="text-foreground">Why we need it:</strong> To inject a content script that can scan web pages for magnet links.
+                    <strong className="text-foreground">Why we need it:</strong> To inject a content script that can scan web pages for magnet links and extract relevant metadata.
                   </p>
                   <p>
-                    <strong className="text-foreground">What we actually do:</strong> The content script checks if the current page's URL matches your whitelist using <code className="text-sm bg-muted px-1.5 py-0.5 rounded">minimatch</code> pattern matching. If it matches, it uses a MutationObserver to detect magnet links in the DOM and extracts them using site-specific adapters.
+                    <strong className="text-foreground">What we actually do:</strong> The content script checks if the current page's URL matches your whitelist using <code className="text-sm bg-muted px-1.5 py-0.5 rounded">minimatch</code> pattern matching. If it matches, it uses a MutationObserver to detect magnet links in the DOM. When a site-specific adapter is available (e.g., for popular torrent sites), we parse additional page content to extract enhanced metadata like file size, seeders, leechers, upload date, and category information. This parsing happens entirely locally in your browser, and the page content is immediately discarded—only the extracted magnet links and metadata are stored.
                   </p>
                   <p>
-                    <strong className="text-foreground">What we never do:</strong> Run on pages that don't match your whitelist. We don't read form data, passwords, cookies, or any other page content—only magnet links (URIs starting with <code className="text-sm bg-muted px-1.5 py-0.5 rounded">magnet:?</code>) and related information.
+                    <strong className="text-foreground">What we never do:</strong> Run on pages that don't match your whitelist. We don't read form data, passwords, cookies, or transmit any page content anywhere. The page parsing is strictly limited to extracting torrent-related metadata (file sizes, seeder counts, etc.) to enhance your magnet link collection. No browsing history, personal data, or unrelated page content is ever collected or stored.
                   </p>
                 </CardDescription>
               </CardHeader>
