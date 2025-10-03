@@ -1,7 +1,4 @@
-import type { RawMagnetLinkData, SourceAdapter } from "@magneto/types";
-
-const isWaybackSnapshot = (loc: Location) =>
-	  loc.hostname === "web.archive.org" && /^\/web\/\d{14}\//.test(loc.pathname);
+import type { RawMagnetLinkData } from "@magneto/types";
 
 const waybackHostname = (loc: Location): string | null => {
   if (loc.hostname !== "web.archive.org") return null;
@@ -33,7 +30,7 @@ function waybackMachineLinkToOriginal(link: string): string | null {
   }
 }
 
-function waybackMachineSubAdapter(
+export function waybackMachineSubAdapter(
   document: Document,
   location: Location
 ): RawMagnetLinkData[] {
@@ -58,29 +55,3 @@ function waybackMachineSubAdapter(
 
   return rawMagnetLinkData;
 }
-
-function detailsPageSubAdapter(
-  document: Document,
-): RawMagnetLinkData[] {
-  const rawMagnetLinkData: RawMagnetLinkData[] = [];
-  return rawMagnetLinkData;
-}
-
-export const ArchiveOrgAdapter: SourceAdapter = {
-  name: "archive-org",
-  displayName: "Archive.org",
-  domains: ["archive.org", "www.archive.org", "web.archive.org"],
-
-  handler(document: Document, location: Location): RawMagnetLinkData[] {
-    if (!document || !location) return [];
-
-    if (isWaybackSnapshot(location)) {
-      console.log("Detected Wayback Machine snapshot");
-      return waybackMachineSubAdapter(document, location);
-    } else if (location.pathname.startsWith("/details/")) {
-      return detailsPageSubAdapter(document);
-    } else {
-      return [];
-    }
-  }
-};

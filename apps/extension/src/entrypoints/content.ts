@@ -4,7 +4,7 @@ import type {
   SourceAdapter,
   CollectionMode,
 } from "@magneto/types";
-import { getAdapter } from "@/lib/adapters";
+import { getAdapter } from "@magneto/adapters";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { checkWhitelist } from "@/lib/utils";
 
@@ -126,7 +126,7 @@ function extractMagnetData(
   location: Location
 ): RawMagnetLinkData[] {
   const adapter = getAdapter(location.hostname);
-  return adapter(document, location);
+  return adapter.handler(document, location);
 }
 
 async function saveMagnets(
