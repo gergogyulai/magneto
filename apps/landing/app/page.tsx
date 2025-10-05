@@ -4,18 +4,27 @@ import { Badge } from "@/components/ui/badge"
 import { Shield, Database, Github, Chrome, Lock, Zap, Download, Search, FileText, Check } from "lucide-react"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { userAgent } from "next/server"
+import { headers } from "next/headers"
+import BrowserAwareAddButton from "@/components/browser-aware-add-button"
+import BrowserAwareBadge from "@/components/browser-aware-badge"
 
-export default function Home() {
+
+export default async function Home() {
+  const headersList = await headers()
+  const { browser } = userAgent({headers: headersList});
+
+  const browserName = browser.name || 'Chrome';
+  const addButtonText = `Add to ${browserName}`;
+  const installButtonText = `Install Extension`;
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative py-24 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
         <div className="container mx-auto max-w-5xl text-center relative">
-          <Badge variant="secondary" className="mb-6 text-sm px-4 py-1.5">
-            <Chrome className="w-3.5 h-3.5 mr-1.5 inline" />
-            Chrome Extension • Requires Chrome 114+
-          </Badge>
+          <BrowserAwareBadge />
           <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 text-balance leading-tight">
             Never Lose a <span className="text-primary">Magnet Link</span> Again
           </h1>
@@ -25,12 +34,7 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Link href="https://chromewebstore.google.com/">
-              <Button size="lg" className="px-8 py-6 text-base font-semibold">
-                <Chrome className="w-5 h-5 mr-2" />
-                Add to Chrome
-              </Button>
-            </Link>
+            <BrowserAwareAddButton />
             <Link href="https://github.com/gergogyulai/magneto">
               <Button variant="outline" size="lg" className="px-8 py-6 text-base font-semibold">
                 <Github className="w-5 h-5 mr-2" />
@@ -239,12 +243,7 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            <Link href="https://chromewebstore.google.com/">
-              <Button size="lg" className="px-8 py-6 text-base font-semibold">
-                <Chrome className="w-5 h-5 mr-2" />
-                Install Extension
-              </Button>
-            </Link>
+            <BrowserAwareAddButton text="Install Extension" />
             <Link href="https://github.com/gergogyulai/magneto">
               <Button variant="outline" size="lg" className="px-8 py-6 text-base font-semibold">
                 <Github className="w-5 h-5 mr-2" />
