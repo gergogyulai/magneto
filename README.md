@@ -11,7 +11,7 @@
         </a>
     </p>
     <p>
-        <a href="https://chrome.google.com/webstore/detail/magneto/your-extension-id">
+        <a href="https://chromewebstore.google.com/detail/magneto/aalfcibiminkofedkaljepdagfdpfeki">
             🧲 add to chrome
         </a>
         <br/>
@@ -39,7 +39,7 @@ magneto quietly saves every magnet link you stumble across. when torrent sites g
 
 #### extension store
 the easiest way is through the chrome web store:  
-[**→ add magneto to chrome**](https://chrome.google.com/webstore/detail/magneto/your-extension-id) (not yet approved)
+[**→ add magneto to chrome**](https://chromewebstore.google.com/detail/magneto/aalfcibiminkofedkaljepdagfdpfeki)
 requires **chrome 114+**.  
 *(firefox & edge support coming soon)*  
 
